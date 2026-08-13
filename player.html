@@ -466,6 +466,40 @@
       font-weight: bold;
     }
 
+    .btn-record {
+      background: linear-gradient(to right, #ef4444, #dc2626);
+      border: none;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-record:hover {
+      background: linear-gradient(to right, #dc2626, #b91c1c);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-record.recording {
+      background: #ef4444 !important;
+      animation: recordPulse 1.5s infinite alternate;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.6) !important;
+    }
+
+    @keyframes recordPulse {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0.85; transform: scale(0.97); }
+    }
+
+    .recording-timer {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #ef4444;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      margin-left: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
     /* Indicadores de atajos de teclado */
     .shortcuts-legend {
       text-align: center;
@@ -507,7 +541,8 @@
     <div class="toolbar-left">
       <button class="btn btn-toggle" id="btn-toggle-config" onclick="toggleConfigPanel()">⚙️ Configuración</button>
       <a href="index.html" class="btn" style="text-decoration: none;">🏠 Volver al Menú</a>
-      <a href="#" class="btn btn-quiz" id="btn-goto-quiz" style="text-decoration: none; display: none;">🧠 Hacer Quiz</a>
+      <button class="btn btn-toggle btn-record" id="btn-record-screen" onclick="toggleScreenRecording()">🔴 Grabar Pantalla</button>
+      <span class="recording-timer" id="recording-timer">● REC 00:00</span>
     </div>
     
     <div class="toolbar-right">
@@ -598,11 +633,6 @@
     const urlParams = new URLSearchParams(window.location.search);
     const song = urlParams.get('song');
     if (song) {
-      const quizBtn = document.getElementById('btn-goto-quiz');
-      if (quizBtn) {
-        quizBtn.href = `Canciones/${song}/quiz.html`;
-        quizBtn.style.display = 'inline-flex';
-      }
       
       const configBtn = document.getElementById('btn-toggle-config');
       if (configBtn) configBtn.style.display = 'none';
@@ -631,7 +661,19 @@
         })
         .catch(err => {
           console.error(err);
-          slideDisplay.innerHTML = `<span style="color:#f87171; font-size:1.2rem; font-weight:600;">Error al cargar la canción ❌</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">Asegúrate de que la carpeta <b>Canciones/${song}</b> exista y contenga los archivos necesarios.</span>`;
+          if (window.location.protocol === 'file:') {
+            slideDisplay.innerHTML = `
+              <span style="color:#f87171; font-size:1.15rem; font-weight:600; display:block; margin-bottom:8px;">Bloqueo de Seguridad del Navegador (CORS) ❌</span>
+              <span style="color:#94a3b8; font-size:0.9rem; font-weight:normal; display:block; margin-bottom:8px; line-height:1.4;">
+                Estás abriendo el archivo directamente (<code style="color:#fde047; font-family:monospace; background:rgba(0,0,0,0.3); padding:2px 4px; border-radius:4px;">file://</code>). Los navegadores modernos bloquean peticiones locales de texto por seguridad.
+              </span>
+              <span style="color:#38bdf8; font-size:0.9rem; font-weight:normal; display:block; line-height:1.4;">
+                <b>Para solucionarlo:</b> Abre el proyecto usando un servidor local (por ejemplo, haz clic derecho y selecciona <b>"Open with Live Server"</b> en VS Code, o ejecuta <code style="color:#fde047; font-family:monospace; background:rgba(0,0,0,0.3); padding:2px 4px; border-radius:4px;">npx http-server</code> en la terminal).
+              </span>
+            `;
+          } else {
+            slideDisplay.innerHTML = `<span style="color:#f87171; font-size:1.2rem; font-weight:600;">Error al cargar la canción ❌</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">Asegúrate de que la carpeta <b>Canciones/${song}</b> exista y contenga los archivos necesarios.</span>`;
+          }
         });
     }
   });
@@ -864,6 +906,109 @@
         break;
     }
   });
+
+  // Lógica de grabación de pantalla integrada
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  let recordingStartTime = null;
+  let timerInterval = null;
+
+  async function toggleScreenRecording() {
+    const recordBtn = document.getElementById('btn-record-screen');
+    const timerSpan = document.getElementById('recording-timer');
+
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      mediaRecorder.stop();
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          displaySurface: "browser",
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 30 }
+        },
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      });
+
+      recordedChunks = [];
+      
+      let options = { mimeType: 'video/webm;codecs=vp9,opus' };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: 'video/webm;codecs=vp8,opus' };
+      }
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: 'video/webm' };
+      }
+
+      mediaRecorder = new MediaRecorder(stream, options);
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        stream.getTracks().forEach(track => track.stop());
+
+        recordBtn.innerText = "🔴 Grabar Pantalla";
+        recordBtn.classList.remove('recording');
+        timerSpan.style.display = "none";
+        clearInterval(timerInterval);
+
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        document.body.appendChild(a);
+        a.style = 'display: none';
+        a.href = url;
+        const songParam = new URLSearchParams(window.location.search).get('song') || 'clase';
+        a.download = `grabacion_escucha_activa_${songParam}_${new Date().toISOString().slice(0,10)}.webm`;
+        a.click();
+        
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      };
+
+      mediaRecorder.start();
+
+      recordBtn.innerText = "⏹️ Detener Grabación";
+      recordBtn.classList.add('recording');
+      timerSpan.style.display = "inline-flex";
+      
+      recordingStartTime = Date.now();
+      updateTimerDisplay();
+      timerInterval = setInterval(updateTimerDisplay, 1000);
+
+      stream.getVideoTracks()[0].onended = () => {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+        }
+      };
+
+    } catch (err) {
+      console.error("Error al iniciar grabación de pantalla:", err);
+      alert("No se pudo iniciar la grabación. Asegúrate de otorgar los permisos necesarios.");
+    }
+  }
+
+  function updateTimerDisplay() {
+    const timerSpan = document.getElementById('recording-timer');
+    const elapsed = Date.now() - recordingStartTime;
+    const totalSeconds = Math.floor(elapsed / 1000);
+    const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+    const seconds = String(totalSeconds % 60).padStart(2, '0');
+    timerSpan.innerText = `● REC ${minutes}:${seconds}`;
+  }
 </script>
 
 </body>
