@@ -628,53 +628,108 @@
   const visualizer = document.getElementById('audio-visualizer');
   const slideCounter = document.getElementById('slide-counter');
 
-  // Detectar y cargar canción por parámetro URL
-  window.addEventListener('DOMContentLoaded', () => {
+  // IndexedDB Config y lectura de canciones locales
+  const DB_NAME = 'EscuchaActivaDB';
+  const DB_VERSION = 1;
+  const STORE_NAME = 'canciones';
+
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        }
+      };
+      request.onsuccess = (e) => resolve(e.target.result);
+      request.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async function getLocalSong(id) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(id);
+      request.onsuccess = (e) => resolve(e.target.result);
+      request.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  // Detectar y cargar canción por parámetro URL (soporta local y estática)
+  window.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const song = urlParams.get('song');
     if (song) {
-      
       const configBtn = document.getElementById('btn-toggle-config');
       if (configBtn) configBtn.style.display = 'none';
       const configPanel = document.getElementById('config-panel');
       if (configPanel) configPanel.classList.add('collapsed');
 
       slideDisplay.innerHTML = `<span style="color:#38bdf8; font-size:1.2rem; font-weight:600;">Cargando canción... 🎵</span>`;
-      audio.src = `Canciones/${song}/voz.mp3`;
 
-      fetch(`Canciones/${song}/diapositiva.lrc`)
-        .then(response => {
-          if (!response.ok) throw new Error('No se pudo encontrar el archivo de diapositivas.');
-          return response.text();
-        })
-        .then(text => {
-          slidesData = parseLRC(text);
+      // CASO 1: Canción cargada localmente desde IndexedDB
+      if (song.startsWith('local_')) {
+        try {
+          const localSong = await getLocalSong(song);
+          if (!localSong) throw new Error("No se encontró la canción en el navegador.");
+
+          audio.src = URL.createObjectURL(localSong.audioBlob);
+          slidesData = parseLRC(localSong.slideText);
           currentIndex = -1;
           isRevealed = false;
-          
-          const cleanName = song.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
-          document.querySelector('header h1').innerText = cleanName + ' 🎵';
+
+          document.querySelector('header h1').innerText = `${localSong.title} - ${localSong.artist} 🎵`;
           document.querySelector('header p').innerText = "Escucha Activa - Presiona Siguiente o Espacio para empezar";
           
           slideDisplay.innerHTML = `<span style="color:#38bdf8; font-size:1.2rem; font-weight:600;">¡Material cargado con éxito! 🎶</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">Pulsa <b>▶️ Siguiente</b> o presiona la barra <b>Espaciadora</b> para empezar.</span>`;
           updateCounter();
-        })
-        .catch(err => {
+
+        } catch (err) {
           console.error(err);
-          if (window.location.protocol === 'file:') {
-            slideDisplay.innerHTML = `
-              <span style="color:#f87171; font-size:1.15rem; font-weight:600; display:block; margin-bottom:8px;">Bloqueo de Seguridad del Navegador (CORS) ❌</span>
-              <span style="color:#94a3b8; font-size:0.9rem; font-weight:normal; display:block; margin-bottom:8px; line-height:1.4;">
-                Estás abriendo el archivo directamente (<code style="color:#fde047; font-family:monospace; background:rgba(0,0,0,0.3); padding:2px 4px; border-radius:4px;">file://</code>). Los navegadores modernos bloquean peticiones locales de texto por seguridad.
-              </span>
-              <span style="color:#38bdf8; font-size:0.9rem; font-weight:normal; display:block; line-height:1.4;">
-                <b>Para solucionarlo:</b> Abre el proyecto usando un servidor local (por ejemplo, haz clic derecho y selecciona <b>"Open with Live Server"</b> en VS Code, o ejecuta <code style="color:#fde047; font-family:monospace; background:rgba(0,0,0,0.3); padding:2px 4px; border-radius:4px;">npx http-server</code> en la terminal).
-              </span>
-            `;
-          } else {
-            slideDisplay.innerHTML = `<span style="color:#f87171; font-size:1.2rem; font-weight:600;">Error al cargar la canción ❌</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">Asegúrate de que la carpeta <b>Canciones/${song}</b> exista y contenga los archivos necesarios.</span>`;
-          }
-        });
+          slideDisplay.innerHTML = `<span style="color:#f87171; font-size:1.2rem; font-weight:600;">Error al cargar la canción local ❌</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">No se pudo encontrar el archivo en la base de datos de este navegador.</span>`;
+        }
+      } 
+      // CASO 2: Canción precargada (estática en el servidor)
+      else {
+        audio.src = `Canciones/${song}/voz.mp3`;
+
+        fetch(`Canciones/${song}/diapositiva.lrc`)
+          .then(response => {
+            if (!response.ok) throw new Error('No se pudo encontrar el archivo de diapositivas.');
+            return response.text();
+          })
+          .then(text => {
+            slidesData = parseLRC(text);
+            currentIndex = -1;
+            isRevealed = false;
+            
+            const cleanName = song.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+            document.querySelector('header h1').innerText = cleanName + ' 🎵';
+            document.querySelector('header p').innerText = "Escucha Activa - Presiona Siguiente o Espacio para empezar";
+            
+            slideDisplay.innerHTML = `<span style="color:#38bdf8; font-size:1.2rem; font-weight:600;">¡Material cargado con éxito! 🎶</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">Pulsa <b>▶️ Siguiente</b> o presiona la barra <b>Espaciadora</b> para empezar.</span>`;
+            updateCounter();
+          })
+          .catch(err => {
+            console.error(err);
+            if (window.location.protocol === 'file:') {
+              slideDisplay.innerHTML = `
+                <span style="color:#f87171; font-size:1.15rem; font-weight:600; display:block; margin-bottom:8px;">Bloqueo de Seguridad del Navegador (CORS) ❌</span>
+                <span style="color:#94a3b8; font-size:0.9rem; font-weight:normal; display:block; margin-bottom:8px; line-height:1.4;">
+                  Estás abriendo el archivo directamente (<code style="color:#fde047; font-family:monospace; background:rgba(0,0,0,0.3); padding:2px 4px; border-radius:4px;">file://</code>). Los navegadores modernos bloquean peticiones locales de texto por seguridad.
+                </span>
+                <span style="color:#38bdf8; font-size:0.9rem; font-weight:normal; display:block; line-height:1.4;">
+                  <b>Para solucionarlo:</b> Abre el proyecto usando un servidor local (por ejemplo, haz clic derecho y selecciona <b>"Open with Live Server"</b> en VS Code, o ejecuta <code style="color:#fde047; font-family:monospace; background:rgba(0,0,0,0.3); padding:2px 4px; border-radius:4px;">npx http-server</code> en la terminal).
+                </span>
+              `;
+            } else {
+              slideDisplay.innerHTML = `<span style="color:#f87171; font-size:1.2rem; font-weight:600;">Error al cargar la canción ❌</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">Asegúrate de que la carpeta <b>Canciones/${song}</b> exista y contenga los archivos necesarios.</span>`;
+            }
+          });
+      }
     }
   });
 

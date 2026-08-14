@@ -223,73 +223,45 @@
   <p>Entrena tu oído en inglés con ejercicios interactivos de Escucha Activa a ciegas frase por frase, y pon a prueba tus conocimientos en cada canción.</p>
 </header>
 
+<div style="margin-bottom: 24px; text-align: center;">
+  <button class="btn-action btn-player" id="btn-toggle-upload-form" onclick="toggleUploadForm()" style="cursor: pointer;">➕ Agregar Nueva Canción</button>
+</div>
+
+<!-- Formulario de Carga de Canción Local -->
+<div id="upload-form-panel" style="display: none; width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 24px; padding: 28px; margin: 0 auto 30px auto; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);">
+  <h2 style="font-size: 1.5rem; margin-bottom: 18px; color: #fff; text-align: center;">Subir Nueva Canción (Navegador)</h2>
+  <form id="song-upload-form" style="display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
+      <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-english); text-transform: uppercase;">Título de la Canción</label>
+      <input type="text" id="song-title" required style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; color: #fff; font-family: inherit;">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
+      <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-english); text-transform: uppercase;">Artista / Banda</label>
+      <input type="text" id="song-artist" required style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; color: #fff; font-family: inherit;">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
+      <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-english); text-transform: uppercase;">Nivel de Dificultad</label>
+      <select id="song-level" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; color: #fff; font-family: inherit; cursor: pointer;">
+        <option value="Básico">Básico</option>
+        <option value="Intermedio" selected>Intermedio</option>
+        <option value="Avanzado">Avanzado</option>
+      </select>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
+      <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-english); text-transform: uppercase;">Archivo MP3 de Audio</label>
+      <input type="file" id="song-audio" accept="audio/*" required style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; color: #fff; font-family: inherit;">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
+      <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-english); text-transform: uppercase;">Archivo LRC de Diapositivas (.lrc)</label>
+      <input type="file" id="song-lrc-slide" accept=".lrc" required style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; color: #fff; font-family: inherit;">
+    </div>
+    <button type="submit" class="btn-action btn-player" style="margin-top: 10px; cursor: pointer;">💾 Guardar Canción en el Navegador</button>
+  </form>
+</div>
+
 <!-- Contenedor del Catálogo de Lecciones -->
-<div class="song-grid">
-  
-  <!-- Tarjeta de Canción 1 -->
-  <div class="song-card">
-    <span class="level-badge">Intermedio</span>
-    <div class="song-title">Hate That I Made You Love Me</div>
-    <div class="song-artist">Ariana Grande</div>
-    
-    <div class="syllabus-list">
-      <div class="syllabus-item">
-        <span class="bullet">📖</span>
-        <span><b>Vocabulario:</b> Adverbio "Barely" (Apenas / Casi no)</span>
-      </div>
-      <div class="syllabus-item">
-        <span class="bullet">💡</span>
-        <span><b>Comprensión:</b> Expresiones causativas y traducción real</span>
-      </div>
-      <div class="syllabus-item">
-        <span class="bullet">🗣️</span>
-        <span><b>Pronunciación:</b> Regla de consonantes mudas ("tomb")</span>
-      </div>
-      <div class="syllabus-item">
-        <span class="bullet">🇺🇸</span>
-        <span><b>Uso Real:</b> Modismo americano "be down to"</span>
-      </div>
-    </div>
-    
-    <div class="card-actions">
-      <a href="player.html?song=ArianaGrande_HateThatIMadeYouLoveMe" class="btn-action btn-player">
-        🎧 Practicar Escucha Activa
-      </a>
-    </div>
-  </div>
-
-  <!-- Tarjeta de Canción 2 (Maqueta / Placeholder para el futuro) -->
-  <div class="song-card" style="opacity: 0.6; filter: grayscale(40%);">
-    <span class="level-badge" style="background: rgba(74, 222, 128, 0.15); border-color: rgba(74, 222, 128, 0.3); color: var(--text-spanish);">Básico</span>
-    <div class="song-title">Yellow</div>
-    <div class="song-artist">Coldplay</div>
-    
-    <div class="syllabus-list">
-      <div class="syllabus-item">
-        <span class="bullet">📖</span>
-        <span><b>Vocabulario:</b> Adjetivos de brillo y luz (Shine, Skin)</span>
-      </div>
-      <div class="syllabus-item">
-        <span class="bullet">💡</span>
-        <span><b>Comprensión:</b> Metáforas poéticas sencillas</span>
-      </div>
-      <div class="syllabus-item">
-        <span class="bullet">🗣️</span>
-        <span><b>Pronunciación:</b> Contracción de consonantes líquidas</span>
-      </div>
-      <div class="syllabus-item">
-        <span class="bullet">🇺🇸</span>
-        <span><b>Uso Real:</b> Expresiones cotidianas de afecto</span>
-      </div>
-    </div>
-    
-    <div class="card-actions">
-      <button class="btn-action btn-secondary" disabled>
-        🔒 Próximamente
-      </button>
-    </div>
-  </div>
-
+<div class="song-grid" id="song-grid">
+  <!-- Se renderiza dinámicamente con JS -->
 </div>
 
 <footer>
@@ -300,5 +272,261 @@
   </p>
 </footer>
 
+<script>
+  // IndexedDB Config
+  const DB_NAME = 'EscuchaActivaDB';
+  const DB_VERSION = 1;
+  const STORE_NAME = 'canciones';
+
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        }
+      };
+      request.onsuccess = (e) => resolve(e.target.result);
+      request.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async function saveSong(song) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.put(song);
+      request.onsuccess = () => resolve();
+      request.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async function getAllLocalSongs() {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.getAll();
+      request.onsuccess = (e) => resolve(e.target.result);
+      request.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async function deleteSong(id) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.delete(id);
+      request.onsuccess = () => resolve();
+      request.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  const staticSongs = [
+    {
+      id: 'ArianaGrande_HateThatIMadeYouLoveMe',
+      title: 'Hate That I Made You Love Me',
+      artist: 'Ariana Grande',
+      level: 'Intermedio',
+      syllabus: [
+        { bullet: '📖', label: 'Vocabulario', text: 'Adverbio "Barely" (Apenas / Casi no)' },
+        { bullet: '💡', label: 'Comprensión', text: 'Expresiones causativas y traducción real' },
+        { bullet: '🗣️', label: 'Pronunciación', text: 'Regla de consonantes mudas ("tomb")' },
+        { bullet: '🇺🇸', label: 'Uso Real', text: 'Modismo americano "be down to"' }
+      ],
+      isStatic: true
+    },
+    {
+      id: 'Coldplay_Yellow',
+      title: 'Yellow',
+      artist: 'Coldplay',
+      level: 'Básico',
+      syllabus: [
+        { bullet: '📖', label: 'Vocabulario', text: 'Adjetivos de brillo y luz (Shine, Skin)' },
+        { bullet: '💡', label: 'Comprensión', text: 'Metáforas poéticas sencillas' },
+        { bullet: '🗣️', label: 'Pronunciación', text: 'Contracción de consonantes líquidas' },
+        { bullet: '🇺🇸', label: 'Uso Real', text: 'Expresiones cotidianas de afecto' }
+      ],
+      isStatic: true,
+      disabled: true
+    }
+  ];
+
+  function toggleUploadForm() {
+    const panel = document.getElementById('upload-form-panel');
+    const btn = document.getElementById('btn-toggle-upload-form');
+    if (panel.style.display === 'none') {
+      panel.style.display = 'block';
+      btn.innerText = '➖ Ocultar Formulario';
+    } else {
+      panel.style.display = 'none';
+      btn.innerText = '➕ Agregar Nueva Canción';
+    }
+  }
+
+  async function renderSongGrid() {
+    const grid = document.getElementById('song-grid');
+    grid.innerHTML = '';
+
+    let localSongs = [];
+    try {
+      localSongs = await getAllLocalSongs();
+    } catch (err) {
+      console.error("Error al obtener canciones locales:", err);
+    }
+
+    const allSongs = [...staticSongs, ...localSongs];
+
+    allSongs.forEach(song => {
+      const card = document.createElement('div');
+      card.className = 'song-card';
+      if (song.disabled) {
+        card.style.opacity = '0.6';
+        card.style.filter = 'grayscale(40%)';
+      }
+
+      let levelColor = '';
+      if (song.level === 'Básico') {
+        levelColor = 'background: rgba(74, 222, 128, 0.15); border-color: rgba(74, 222, 128, 0.3); color: var(--text-spanish);';
+      } else if (song.level === 'Avanzado') {
+        levelColor = 'background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #f87171;';
+      }
+
+      const localBadge = !song.isStatic ? `<span class="level-badge" style="background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.3); color: var(--text-english); margin-left: 8px;">Local</span>` : '';
+
+      let syllabusHTML = '';
+      if (song.syllabus) {
+        song.syllabus.forEach(item => {
+          syllabusHTML += `
+            <div class="syllabus-item">
+              <span class="bullet">${item.bullet}</span>
+              <span><b>${item.label}:</b> ${item.text}</span>
+            </div>
+          `;
+        });
+      } else {
+        syllabusHTML = `
+          <div class="syllabus-item">
+            <span class="bullet">🎵</span>
+            <span>Canción personalizada subida al navegador.</span>
+          </div>
+          <div class="syllabus-item">
+            <span class="bullet">💾</span>
+            <span>Almacenamiento persistente local.</span>
+          </div>
+        `;
+      }
+
+      let actionsHTML = '';
+      if (song.disabled) {
+        actionsHTML = `
+          <button class="btn-action btn-secondary" disabled>
+            🔒 Próximamente
+          </button>
+        `;
+      } else {
+        const url = `player.html?song=${song.id}`;
+        actionsHTML = `
+          <a href="${url}" class="btn-action btn-player">
+            🎧 Practicar Escucha Activa
+          </a>
+        `;
+        if (!song.isStatic) {
+          actionsHTML += `
+            <button onclick="removeLocalSong('${song.id}')" class="btn-action btn-record" style="margin-top: 8px; font-size: 0.85rem; padding: 10px 14px; cursor: pointer;">
+              🗑️ Eliminar del Navegador
+            </button>
+          `;
+        }
+      }
+
+      card.innerHTML = `
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
+          <span class="level-badge" style="${levelColor}">${song.level}</span>
+          ${localBadge}
+        </div>
+        <div class="song-title">${song.title}</div>
+        <div class="song-artist">${song.artist}</div>
+        
+        <div class="syllabus-list">
+          ${syllabusHTML}
+        </div>
+        
+        <div class="card-actions">
+          ${actionsHTML}
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+  }
+
+  async function removeLocalSong(id) {
+    if (confirm("¿Estás seguro de que deseas eliminar esta canción del navegador?")) {
+      await deleteSong(id);
+      renderSongGrid();
+    }
+  }
+
+  function readFileAsText(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = (e) => reject(e.target.error);
+      reader.readAsText(file);
+    });
+  }
+
+  document.getElementById('song-upload-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById('song-title').value.trim();
+    const artist = document.getElementById('song-artist').value.trim();
+    const level = document.getElementById('song-level').value;
+    const audioFile = document.getElementById('song-audio').files[0];
+    const slideFile = document.getElementById('song-lrc-slide').files[0];
+
+    if (!title || !artist || !audioFile || !slideFile) {
+      alert("Por favor, completa todos los campos requeridos.");
+      return;
+    }
+
+    const id = 'local_' + Date.now();
+
+    try {
+      const slideText = await readFileAsText(slideFile);
+      const audioBlob = audioFile; // File ya es un Blob
+
+      const newSong = {
+        id,
+        title,
+        artist,
+        level,
+        slideText,
+        audioBlob,
+        isStatic: false
+      };
+
+      await saveSong(newSong);
+      alert("¡Canción guardada con éxito en el navegador! 🎶");
+      
+      document.getElementById('song-upload-form').reset();
+      toggleUploadForm();
+      
+      renderSongGrid();
+
+    } catch (err) {
+      console.error("Error al guardar la canción:", err);
+      alert("Ocurrió un error al procesar los archivos.");
+    }
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    renderSongGrid();
+  });
+</script>
 </body>
 </html>
