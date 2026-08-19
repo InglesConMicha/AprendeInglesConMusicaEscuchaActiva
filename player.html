@@ -525,6 +525,45 @@
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    .slide-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    
+    .webcam-container {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      width: 160px;
+      height: 120px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid var(--text-english);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 15px rgba(56, 189, 248, 0.2);
+      z-index: 10;
+      background: #000;
+      display: none;
+      transition: all 0.3s ease;
+    }
+    
+    .webcam-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1); /* Espejo */
+    }
+    
+    .btn-webcam {
+      background: linear-gradient(to right, #0ea5e9, #0284c7);
+      border: none;
+      box-shadow: 0 4px 15px rgba(14, 165, 233, 0.25);
+    }
+    
+    .btn-webcam.active {
+      background: linear-gradient(to right, #10b981, #059669) !important;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25) !important;
+    }
   </style>
 </head>
 <body>
@@ -541,6 +580,7 @@
     <div class="toolbar-left">
       <button class="btn btn-toggle" id="btn-toggle-config" onclick="toggleConfigPanel()">⚙️ Configuración</button>
       <a href="index.html" class="btn" style="text-decoration: none;">🏠 Volver al Menú</a>
+      <button class="btn btn-toggle btn-webcam" id="btn-toggle-webcam" onclick="toggleWebcam()">📷 Activar Cámara</button>
       <button class="btn btn-toggle btn-record" id="btn-record-screen" onclick="toggleScreenRecording()">🔴 Grabar Pantalla</button>
       <span class="recording-timer" id="recording-timer">● REC 00:00</span>
     </div>
@@ -570,11 +610,16 @@
     </div>
   </div>
 
-  <!-- Vista Previa / Diapositiva Principal -->
-  <div class="slide-card active-listening" id="slide-display">
-    <span style="color:#94a3b8; font-size:1.1rem; font-weight:normal;">
-      Sube los archivos en configuración y presiona <b>Siguiente</b> para iniciar la clase.
-    </span>
+  <!-- Vista Previa / Diapositiva Principal con Webcam Container -->
+  <div class="slide-wrapper">
+    <div class="slide-card active-listening" id="slide-display">
+      <span style="color:#94a3b8; font-size:1.1rem; font-weight:normal;">
+        Sube los archivos en configuración y presiona <b>Siguiente</b> para iniciar la clase.
+      </span>
+    </div>
+    <div class="webcam-container" id="webcam-container">
+      <video class="webcam-video" id="webcam-video" autoplay playsinline muted></video>
+    </div>
   </div>
 
   <!-- Visualizador de ondas de audio -->
@@ -906,11 +951,46 @@
     }
   });
 
-  // Lógica de grabación de pantalla integrada
+  // Lógica de cámara web
+  let webcamStream = null;
+
+  async function toggleWebcam() {
+    const webcamContainer = document.getElementById('webcam-container');
+    const webcamVideo = document.getElementById('webcam-video');
+    const webcamBtn = document.getElementById('btn-toggle-webcam');
+
+    if (webcamStream) {
+      // Detener cámara
+      webcamStream.getTracks().forEach(track => track.stop());
+      webcamStream = null;
+      webcamVideo.srcObject = null;
+      webcamContainer.style.display = 'none';
+      webcamBtn.innerText = '📷 Activar Cámara';
+      webcamBtn.classList.remove('active');
+    } else {
+      // Iniciar cámara
+      try {
+        webcamStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 320, height: 240 },
+          audio: false
+        });
+        webcamVideo.srcObject = webcamStream;
+        webcamContainer.style.display = 'block';
+        webcamBtn.innerText = '📷 Apagar Cámara';
+        webcamBtn.classList.add('active');
+      } catch (err) {
+        console.error("Error al acceder a la cámara:", err);
+        alert("No se pudo acceder a la cámara web. Asegúrate de dar los permisos necesarios.");
+      }
+    }
+  }
+
+  // Lógica de grabación de pantalla integrada (Grabación del elemento de las diapositivas únicamente)
   let mediaRecorder = null;
   let recordedChunks = [];
   let recordingStartTime = null;
   let timerInterval = null;
+  let animationFrameId = null;
 
   async function toggleScreenRecording() {
     const recordBtn = document.getElementById('btn-record-screen');
@@ -922,6 +1002,7 @@
     }
 
     try {
+      // Capturamos la pantalla/pestaña
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           displaySurface: "browser",
@@ -937,7 +1018,58 @@
       });
 
       recordedChunks = [];
-      
+
+      // Crear elementos temporales para recortar la diapositiva en el Canvas
+      const captureVideo = document.createElement('video');
+      captureVideo.srcObject = stream;
+      captureVideo.muted = true;
+      captureVideo.playsInline = true;
+      await captureVideo.play();
+
+      const captureCanvas = document.createElement('canvas');
+      const ctx = captureCanvas.getContext('2d');
+
+      // Configurar el tamaño del canvas al tamaño del slide-display (o aproximado de alta definición)
+      const rect = slideDisplay.getBoundingClientRect();
+      captureCanvas.width = rect.width * 1.5;
+      captureCanvas.height = rect.height * 1.5;
+
+      // Dibujar cíclicamente la sección correspondiente al slide-display en el canvas
+      function drawFrame() {
+        if (stream.active) {
+          const currentRect = slideDisplay.getBoundingClientRect();
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
+
+          // Escalar según la resolución real del video vs tamaño del viewport del navegador
+          const scaleX = captureVideo.videoWidth / viewportWidth;
+          const scaleY = captureVideo.videoHeight / viewportHeight;
+
+          const cropX = currentRect.left * scaleX;
+          const cropY = currentRect.top * scaleY;
+          const cropWidth = currentRect.width * scaleX;
+          const cropHeight = currentRect.height * scaleY;
+
+          // Dibujar el fragmento recortado
+          ctx.drawImage(
+            captureVideo,
+            cropX, cropY, cropWidth, cropHeight,
+            0, 0, captureCanvas.width, captureCanvas.height
+          );
+
+          animationFrameId = requestAnimationFrame(drawFrame);
+        }
+      }
+      drawFrame();
+
+      // Capturar stream del canvas
+      const canvasStream = captureCanvas.captureStream(30);
+
+      // Mezclar video del canvas con el audio capturado de la pestaña
+      const outputStream = new MediaStream();
+      canvasStream.getVideoTracks().forEach(track => outputStream.addTrack(track));
+      stream.getAudioTracks().forEach(track => outputStream.addTrack(track));
+
       let options = { mimeType: 'video/webm;codecs=vp9,opus' };
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
         options = { mimeType: 'video/webm;codecs=vp8,opus' };
@@ -946,7 +1078,7 @@
         options = { mimeType: 'video/webm' };
       }
 
-      mediaRecorder = new MediaRecorder(stream, options);
+      mediaRecorder = new MediaRecorder(outputStream, options);
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data && event.data.size > 0) {
@@ -955,7 +1087,16 @@
       };
 
       mediaRecorder.onstop = () => {
+        // Detener animación de frames
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+
+        // Limpiar recursos
         stream.getTracks().forEach(track => track.stop());
+        captureVideo.pause();
+        captureVideo.srcObject = null;
 
         recordBtn.innerText = "🔴 Grabar Pantalla";
         recordBtn.classList.remove('recording');
@@ -971,7 +1112,7 @@
         const songParam = new URLSearchParams(window.location.search).get('song') || 'clase';
         a.download = `grabacion_escucha_activa_${songParam}_${new Date().toISOString().slice(0,10)}.webm`;
         a.click();
-        
+
         setTimeout(() => {
           document.body.removeChild(a);
           window.URL.revokeObjectURL(url);
@@ -983,7 +1124,7 @@
       recordBtn.innerText = "⏹️ Detener Grabación";
       recordBtn.classList.add('recording');
       timerSpan.style.display = "inline-flex";
-      
+
       recordingStartTime = Date.now();
       updateTimerDisplay();
       timerInterval = setInterval(updateTimerDisplay, 1000);
