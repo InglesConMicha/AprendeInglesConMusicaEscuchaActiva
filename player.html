@@ -1001,8 +1001,31 @@
       return;
     }
 
+    // Alerta de recomendación de compartición de pestaña
+    const proceed = confirm(
+      "IMPORTANTE:\n\n" +
+      "Para grabar ÚNICAMENTE las diapositivas con tu cámara y tu voz:\n" +
+      "1. En la ventana que aparecerá, selecciona la pestaña 'Pestaña de Chrome' (o de tu navegador).\n" +
+      "2. Elige esta misma pestaña actual.\n" +
+      "3. Asegúrate de marcar la casilla 'Compartir audio de la pestaña' (o 'Share tab audio') para que se grabe la música.\n\n" +
+      "¿Deseas iniciar?"
+    );
+    if (!proceed) return;
+
+    let micStream = null;
+    let audioCtx = null;
+    let dest = null;
+
     try {
-      // Capturamos la pantalla/pestaña
+      // 1. Solicitar acceso al micrófono para grabar la voz del usuario
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (micErr) {
+        console.warn("No se pudo obtener acceso al micrófono:", micErr);
+        alert("Advertencia: No se detectó micrófono o se denegaron los permisos. Tu voz no se incluirá en la grabación, solo el audio de la música.");
+      }
+
+      // 2. Capturamos la pantalla/pestaña
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           displaySurface: "browser",
@@ -1024,15 +1047,23 @@
       captureVideo.srcObject = stream;
       captureVideo.muted = true;
       captureVideo.playsInline = true;
+
+      // Esperar a que el video cargue los metadatos de resolución
+      await new Promise((resolve) => {
+        captureVideo.onloadedmetadata = () => {
+          resolve();
+        };
+      });
       await captureVideo.play();
 
       const captureCanvas = document.createElement('canvas');
       const ctx = captureCanvas.getContext('2d');
 
-      // Configurar el tamaño del canvas al tamaño del slide-display (o aproximado de alta definición)
+      // Configurar el tamaño del canvas al aspecto exacto de la diapositiva en alta resolución (1280px de ancho)
       const rect = slideDisplay.getBoundingClientRect();
-      captureCanvas.width = rect.width * 1.5;
-      captureCanvas.height = rect.height * 1.5;
+      const aspectRatio = rect.width / rect.height;
+      captureCanvas.width = 1280;
+      captureCanvas.height = 1280 / aspectRatio;
 
       // Dibujar cíclicamente la sección correspondiente al slide-display en el canvas
       function drawFrame() {
@@ -1062,13 +1093,34 @@
       }
       drawFrame();
 
-      // Capturar stream del canvas
+      // Capturar stream del canvas a 30fps
       const canvasStream = captureCanvas.captureStream(30);
 
-      // Mezclar video del canvas con el audio capturado de la pestaña
+      // Mezclar los audios (Música/Sistema + Micrófono/Voz) usando AudioContext
       const outputStream = new MediaStream();
-      canvasStream.getVideoTracks().forEach(track => outputStream.addTrack(track));
-      stream.getAudioTracks().forEach(track => outputStream.addTrack(track));
+      outputStream.addTrack(canvasStream.getVideoTracks()[0]);
+
+      const hasSystemAudio = stream.getAudioTracks().length > 0;
+      const hasMicAudio = micStream && micStream.getAudioTracks().length > 0;
+
+      if (hasSystemAudio || hasMicAudio) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+        dest = audioCtx.createMediaStreamDestination();
+
+        if (hasSystemAudio) {
+          const systemSource = audioCtx.createMediaStreamSource(new MediaStream([stream.getAudioTracks()[0]]));
+          systemSource.connect(dest);
+        }
+        if (hasMicAudio) {
+          const micSource = audioCtx.createMediaStreamSource(micStream);
+          micSource.connect(dest);
+        }
+
+        if (dest.stream.getAudioTracks().length > 0) {
+          outputStream.addTrack(dest.stream.getAudioTracks()[0]);
+        }
+      }
 
       let options = { mimeType: 'video/webm;codecs=vp9,opus' };
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
@@ -1093,10 +1145,19 @@
           animationFrameId = null;
         }
 
-        // Limpiar recursos
+        // Limpiar recursos del stream de pantalla
         stream.getTracks().forEach(track => track.stop());
         captureVideo.pause();
         captureVideo.srcObject = null;
+
+        // Limpiar recursos del micrófono
+        if (micStream) {
+          micStream.getTracks().forEach(track => track.stop());
+        }
+        // Cerrar AudioContext
+        if (audioCtx && audioCtx.state !== 'closed') {
+          audioCtx.close();
+        }
 
         recordBtn.innerText = "🔴 Grabar Pantalla";
         recordBtn.classList.remove('recording');
@@ -1138,6 +1199,9 @@
     } catch (err) {
       console.error("Error al iniciar grabación de pantalla:", err);
       alert("No se pudo iniciar la grabación. Asegúrate de otorgar los permisos necesarios.");
+      if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+      }
     }
   }
 
