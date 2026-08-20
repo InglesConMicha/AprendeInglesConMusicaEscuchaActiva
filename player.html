@@ -1085,12 +1085,11 @@
         alert("Advertencia: No se detectó micrófono o se denegaron los permisos. Tu voz no se incluirá en la grabación, solo el audio de la música.");
       }
 
-      // 2. Capturamos la pantalla/pestaña en alta resolución (4K / 2K)
+      // 2. Capturamos la pantalla/pestaña en alta resolución ideal (4K / 2K) de forma flexible
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
-          displaySurface: "browser",
-          width: { ideal: 3840, max: 3840 },
-          height: { ideal: 2160, max: 2160 },
+          width: { ideal: 3840 },
+          height: { ideal: 2160 },
           frameRate: { ideal: 30 }
         },
         audio: {
