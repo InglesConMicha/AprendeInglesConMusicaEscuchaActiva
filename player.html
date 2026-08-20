@@ -687,6 +687,7 @@
     <span><kbd>Espacio</kbd> Siguiente / Revelar</span>
     <span><kbd>R</kbd> Repetir Audio</span>
     <span><kbd>P</kbd> Play / Pausa</span>
+    <span><kbd>V</kbd> Grabar [On/Off]</span>
     <span><kbd>←</kbd> <kbd>→</kbd> Navegar Frases</span>
   </div>
 
@@ -949,6 +950,10 @@
       case ' ': // Barra espaciadora: Siguiente / Revelar
         e.preventDefault();
         handleNextStep();
+        break;
+      case 'v': // V: Iniciar / Detener grabación
+        e.preventDefault();
+        toggleScreenRecording();
         break;
       case 'r': // R: Repetir audio
         e.preventDefault();
