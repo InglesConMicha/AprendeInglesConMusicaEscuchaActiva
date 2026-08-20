@@ -1059,8 +1059,8 @@
     // Alerta de recomendación de compartición de pestaña
     const proceed = confirm(
       "IMPORTANTE:\n\n" +
-      "Para grabar ÚNICAMENTE las diapositivas con tu cámara y tu voz:\n" +
-      "1. En la ventana que aparecerá, selecciona la pestaña 'Pestaña de Chrome' (o de tu navegador).\n" +
+      "Para una grabación de máxima calidad (hasta 4K/2K) con tu voz y cámara:\n" +
+      "1. En la ventana que aparecerá, selecciona la pestaña 'Pestaña de Chrome' o del navegador.\n" +
       "2. Elige esta misma pestaña actual.\n" +
       "3. Asegúrate de marcar la casilla 'Compartir audio de la pestaña' (o 'Share tab audio') para que se grabe la música.\n\n" +
       "¿Deseas iniciar?"
@@ -1080,12 +1080,12 @@
         alert("Advertencia: No se detectó micrófono o se denegaron los permisos. Tu voz no se incluirá en la grabación, solo el audio de la música.");
       }
 
-      // 2. Capturamos la pantalla/pestaña
+      // 2. Capturamos la pantalla/pestaña en alta resolución (4K / 2K)
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           displaySurface: "browser",
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          width: { ideal: 3840, max: 3840 },
+          height: { ideal: 2160, max: 2160 },
           frameRate: { ideal: 30 }
         },
         audio: {
@@ -1097,63 +1097,9 @@
 
       recordedChunks = [];
 
-      // Crear elementos temporales para recortar la diapositiva en el Canvas
-      const captureVideo = document.createElement('video');
-      captureVideo.srcObject = stream;
-      captureVideo.muted = true;
-      captureVideo.playsInline = true;
-
-      // Esperar a que el video cargue los metadatos de resolución
-      await new Promise((resolve) => {
-        captureVideo.onloadedmetadata = () => {
-          resolve();
-        };
-      });
-      await captureVideo.play();
-
-      const captureCanvas = document.createElement('canvas');
-      const ctx = captureCanvas.getContext('2d');
-
-      // Configurar el tamaño del canvas al aspecto exacto de la diapositiva en alta resolución (1280px de ancho)
-      const rect = slideDisplay.getBoundingClientRect();
-      const aspectRatio = rect.width / rect.height;
-      captureCanvas.width = 1280;
-      captureCanvas.height = 1280 / aspectRatio;
-
-      // Dibujar cíclicamente la sección correspondiente al slide-display en el canvas
-      function drawFrame() {
-        if (stream.active) {
-          const currentRect = slideDisplay.getBoundingClientRect();
-          const viewportWidth = window.innerWidth;
-          const viewportHeight = window.innerHeight;
-
-          // Escalar según la resolución real del video vs tamaño del viewport del navegador
-          const scaleX = captureVideo.videoWidth / viewportWidth;
-          const scaleY = captureVideo.videoHeight / viewportHeight;
-
-          const cropX = currentRect.left * scaleX;
-          const cropY = currentRect.top * scaleY;
-          const cropWidth = currentRect.width * scaleX;
-          const cropHeight = currentRect.height * scaleY;
-
-          // Dibujar el fragmento recortado
-          ctx.drawImage(
-            captureVideo,
-            cropX, cropY, cropWidth, cropHeight,
-            0, 0, captureCanvas.width, captureCanvas.height
-          );
-
-          animationFrameId = requestAnimationFrame(drawFrame);
-        }
-      }
-      drawFrame();
-
-      // Capturar stream del canvas a 30fps
-      const canvasStream = captureCanvas.captureStream(30);
-
-      // Mezclar los audios (Música/Sistema + Micrófono/Voz) usando AudioContext
+      // Mezclar la pista de video directa y los audios (Música/Sistema + Micrófono/Voz) usando AudioContext
       const outputStream = new MediaStream();
-      outputStream.addTrack(canvasStream.getVideoTracks()[0]);
+      outputStream.addTrack(stream.getVideoTracks()[0]);
 
       const hasSystemAudio = stream.getAudioTracks().length > 0;
       const hasMicAudio = micStream && micStream.getAudioTracks().length > 0;
@@ -1194,16 +1140,8 @@
       };
 
       mediaRecorder.onstop = () => {
-        // Detener animación de frames
-        if (animationFrameId) {
-          cancelAnimationFrame(animationFrameId);
-          animationFrameId = null;
-        }
-
         // Limpiar recursos del stream de pantalla
         stream.getTracks().forEach(track => track.stop());
-        captureVideo.pause();
-        captureVideo.srcObject = null;
 
         // Limpiar recursos del micrófono
         if (micStream) {
