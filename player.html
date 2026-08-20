@@ -564,6 +564,37 @@
       background: linear-gradient(to right, #10b981, #059669) !important;
       box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25) !important;
     }
+
+    /* Estilos para Pantalla Completa de las Diapositivas */
+    .slide-wrapper:fullscreen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
+      width: 100vw;
+      height: 100vh;
+      box-sizing: border-box;
+      padding: 40px;
+    }
+    
+    .slide-wrapper:fullscreen .slide-card {
+      width: 100%;
+      height: 100%;
+      min-height: auto;
+      font-size: calc(2.4rem * var(--font-scale));
+      padding: 48px;
+      box-shadow: none;
+      border: none;
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    .slide-wrapper:fullscreen .webcam-container {
+      width: 280px;
+      height: 210px;
+      bottom: 24px;
+      right: 24px;
+      border-width: 3px;
+    }
   </style>
 </head>
 <body>
@@ -581,6 +612,7 @@
       <button class="btn btn-toggle" id="btn-toggle-config" onclick="toggleConfigPanel()">⚙️ Configuración</button>
       <a href="index.html" class="btn" style="text-decoration: none;">🏠 Volver al Menú</a>
       <button class="btn btn-toggle btn-webcam" id="btn-toggle-webcam" onclick="toggleWebcam()">📷 Activar Cámara</button>
+      <button class="btn btn-toggle" id="btn-toggle-fullscreen" onclick="toggleFullscreen()">📺 Pantalla Completa</button>
       <button class="btn btn-toggle btn-record" id="btn-record-screen" onclick="toggleScreenRecording()">🔴 Grabar Pantalla</button>
       <span class="recording-timer" id="recording-timer">● REC 00:00</span>
     </div>
@@ -984,6 +1016,29 @@
       }
     }
   }
+
+  function toggleFullscreen() {
+    const slideWrapper = document.querySelector('.slide-wrapper');
+    if (!document.fullscreenElement) {
+      slideWrapper.requestFullscreen().catch(err => {
+        console.error(`Error al intentar activar pantalla completa: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  // Escuchar el evento de cambio de pantalla completa para actualizar el texto del botón
+  document.addEventListener('fullscreenchange', () => {
+    const fullscreenBtn = document.getElementById('btn-toggle-fullscreen');
+    if (document.fullscreenElement) {
+      fullscreenBtn.innerText = '📺 Salir Pantalla Completa';
+      fullscreenBtn.classList.add('active');
+    } else {
+      fullscreenBtn.innerText = '📺 Pantalla Completa';
+      fullscreenBtn.classList.remove('active');
+    }
+  });
 
   // Lógica de grabación de pantalla integrada (Grabación del elemento de las diapositivas únicamente)
   let mediaRecorder = null;
