@@ -544,7 +544,21 @@
       z-index: 10;
       background: #000;
       display: none;
-      transition: all 0.3s ease;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  top 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  left 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  right 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  border-radius 0.3s ease;
+    }
+
+    .webcam-container.camera-expanded {
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
     }
     
     .webcam-video {
@@ -688,6 +702,7 @@
     <span><kbd>R</kbd> Repetir Audio</span>
     <span><kbd>P</kbd> Play / Pausa</span>
     <span><kbd>V</kbd> Grabar [On/Off]</span>
+    <span><kbd>C</kbd> Cámara Grande [On/Off]</span>
     <span><kbd>←</kbd> <kbd>→</kbd> Navegar Frases</span>
   </div>
 
@@ -951,6 +966,10 @@
         e.preventDefault();
         handleNextStep();
         break;
+      case 'c': // C: Expandir / encoger cámara
+        e.preventDefault();
+        toggleCameraExpanded();
+        break;
       case 'v': // V: Iniciar / Detener grabación
         e.preventDefault();
         toggleScreenRecording();
@@ -1002,6 +1021,7 @@
       webcamStream = null;
       webcamVideo.srcObject = null;
       webcamContainer.style.display = 'none';
+      webcamContainer.classList.remove('camera-expanded');
       webcamBtn.innerText = '📷 Activar Cámara';
       webcamBtn.classList.remove('active');
     } else {
@@ -1019,6 +1039,20 @@
         console.error("Error al acceder a la cámara:", err);
         alert("No se pudo acceder a la cámara web. Asegúrate de dar los permisos necesarios.");
       }
+    }
+  }
+
+  function toggleCameraExpanded() {
+    const webcamContainer = document.getElementById('webcam-container');
+    // Si la cámara no está iniciada, primero la iniciamos
+    if (!webcamStream) {
+      toggleWebcam().then(() => {
+        if (webcamStream) {
+          webcamContainer.classList.add('camera-expanded');
+        }
+      });
+    } else {
+      webcamContainer.classList.toggle('camera-expanded');
     }
   }
 
