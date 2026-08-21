@@ -1053,22 +1053,28 @@
 
   function toggleCameraExpanded() {
     const webcamContainer = document.getElementById('webcam-container');
+    const webcamVideo = document.getElementById('webcam-video');
     // Si la cámara no está iniciada, primero la iniciamos
     if (!webcamStream) {
       toggleWebcam().then(() => {
         if (webcamStream) {
           webcamContainer.classList.add('camera-expanded');
+          webcamVideo.play().catch(e => console.warn("Error al reproducir webcam:", e));
         }
       });
     } else {
       webcamContainer.classList.toggle('camera-expanded');
+      webcamVideo.play().catch(e => console.warn("Error al reproducir webcam:", e));
     }
   }
 
   function toggleFullscreen() {
     const slideWrapper = document.querySelector('.slide-wrapper');
+    const webcamVideo = document.getElementById('webcam-video');
     if (!document.fullscreenElement) {
-      slideWrapper.requestFullscreen().catch(err => {
+      slideWrapper.requestFullscreen().then(() => {
+        if (webcamVideo) webcamVideo.play().catch(e => console.warn(e));
+      }).catch(err => {
         console.error(`Error al intentar activar pantalla completa: ${err.message}`);
       });
     } else {
@@ -1079,6 +1085,10 @@
   // Escuchar el evento de cambio de pantalla completa para actualizar el texto del botón
   document.addEventListener('fullscreenchange', () => {
     const fullscreenBtn = document.getElementById('btn-toggle-fullscreen');
+    const webcamVideo = document.getElementById('webcam-video');
+    if (webcamVideo) {
+      webcamVideo.play().catch(e => console.warn("Error al reproducir webcam en fullscreenchange:", e));
+    }
     if (document.fullscreenElement) {
       fullscreenBtn.innerText = '📺 Salir Pantalla Completa';
       fullscreenBtn.classList.add('active');
@@ -1128,11 +1138,11 @@
         alert("Advertencia: No se detectó micrófono o se denegaron los permisos. Tu voz no se incluirá en la grabación, solo el audio de la música.");
       }
 
-      // 2. Capturamos la pantalla/pestaña en alta resolución ideal (4K / 2K) de forma flexible
+      // 2. Capturamos la pantalla/pestaña en resolución estable Full HD (1920x1080)
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
-          width: { ideal: 3840 },
-          height: { ideal: 2160 },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
           frameRate: { ideal: 30 }
         },
         audio: {
