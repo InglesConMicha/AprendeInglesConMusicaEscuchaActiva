@@ -856,42 +856,83 @@
     }
   }
 
-  // Parseador de LRC
+  // Parseador inteligente de LRC con soporte de rangos [inicio-fin] y formato estándar [inicio]
   function parseLRC(lrcText) {
     const data = [];
     const lines = lrcText.split('\n');
-    const timeRegex = /\[(\d{1,2}):(\d{2})\.(\d{2,3})\]/;
+    const rangeRegex = /\[(\d{1,2}):(\d{2})\.(\d{2,3})\s*-\s*(\d{1,2}):(\d{2})\.(\d{2,3})\]/;
+    const singleTimeRegex = /\[(\d{1,2}):(\d{2})\.(\d{2,3})\]/;
+
+    function toSeconds(min, sec, ms) {
+      const msVal = parseFloat(ms) / (ms.length === 3 ? 1000 : 100);
+      return parseFloat(min) * 60 + parseFloat(sec) + msVal;
+    }
 
     lines.forEach(line => {
-      const match = timeRegex.exec(line);
-      if (match) {
-        const minutes = parseFloat(match[1]);
-        const seconds = parseFloat(match[2]);
-        const milliseconds = parseFloat(match[3]) / (match[3].length === 3 ? 1000 : 100);
-        
-        const timeInSeconds = minutes * 60 + seconds + milliseconds;
-        const htmlContent = line.replace(timeRegex, '').trim();
+      const rangeMatch = rangeRegex.exec(line);
+      if (rangeMatch) {
+        const startTime = toSeconds(rangeMatch[1], rangeMatch[2], rangeMatch[3]);
+        const endTime = toSeconds(rangeMatch[4], rangeMatch[5], rangeMatch[6]);
+        const htmlContent = line.replace(rangeRegex, '').trim();
 
         if (htmlContent) {
-          data.push({ time: timeInSeconds, content: htmlContent });
+          data.push({ time: startTime, endTime: endTime, content: htmlContent });
+        }
+      } else {
+        const singleMatch = singleTimeRegex.exec(line);
+        if (singleMatch) {
+          const startTime = toSeconds(singleMatch[1], singleMatch[2], singleMatch[3]);
+          const htmlContent = line.replace(singleTimeRegex, '').trim();
+
+          if (htmlContent) {
+            data.push({ time: startTime, endTime: null, content: htmlContent });
+          }
         }
       }
     });
 
-    return data.sort((a, b) => a.time - b.time);
+    data.sort((a, b) => a.time - b.time);
+
+    // Si no tiene endTime explícito, calcularlo en base a la siguiente frase
+    for (let i = 0; i < data.length; i++) {
+      if (!data[i].endTime) {
+        if (i < data.length - 1) {
+          const gap = data[i + 1].time - data[i].time;
+          // Si el espacio es mayor a 6s (puente o silencio instrumental), limitar la duración máxima a 4.5s
+          data[i].endTime = (gap > 6.0) ? (data[i].time + 4.5) : data[i + 1].time;
+        } else {
+          data[i].endTime = data[i].time + 4.5;
+        }
+      }
+    }
+
+    return data;
   }
 
-  // Evento timeupdate: freno exacto del reproductor
+  // Monitor continuo de alta precisión (60fps) para detener el snippet exactamente a tiempo
+  let playbackFrameId = null;
+
+  function monitorSnippetPlayback() {
+    if (stopTime !== null && isPracticeMode) {
+      if (audio.currentTime >= stopTime || audio.paused) {
+        audio.pause();
+        stopTime = null;
+        isPracticeMode = false;
+        if (playbackFrameId) cancelAnimationFrame(playbackFrameId);
+        return;
+      }
+      playbackFrameId = requestAnimationFrame(monitorSnippetPlayback);
+    }
+  }
+
+  // Evento timeupdate como respaldo
   audio.addEventListener('timeupdate', () => {
     if (slidesData.length === 0) return;
-
     const currentTime = audio.currentTime;
-
     if (stopTime !== null && currentTime >= stopTime) {
       audio.pause();
       stopTime = null;
       isPracticeMode = false;
-      return;
     }
   });
 
@@ -930,20 +971,23 @@
     `;
   }
 
-  // Reproduce la sección de audio correspondiente a la frase actual
-  // Si dura muy poco, le agregamos un margen.
+  // Reproduce la sección de audio correspondiente a la frase actual sin silencios ni cortes
   function playCurrentSnippet() {
     if (slidesData.length === 0 || currentIndex < 0) return;
 
     isPracticeMode = true;
-    const startTime = slidesData[currentIndex].time;
-    const nextTime = (currentIndex < slidesData.length - 1) 
-      ? slidesData[currentIndex + 1].time 
-      : (audio.duration || startTime + 5);
+    const currentSlide = slidesData[currentIndex];
+    const startTime = Math.max(0, currentSlide.time - 0.05); // Margen mínimo al inicio para no cortar la primera consonante
+    
+    // Margen de 0.08s al final para que la última vocal o consonante suene natural y completa
+    const targetEnd = (currentSlide.endTime ? currentSlide.endTime : (currentIndex < slidesData.length - 1 ? slidesData[currentIndex + 1].time : (audio.duration || startTime + 4))) + 0.08;
 
-    stopTime = nextTime;
+    stopTime = targetEnd;
     audio.currentTime = startTime;
-    audio.play();
+    audio.play().then(() => {
+      if (playbackFrameId) cancelAnimationFrame(playbackFrameId);
+      playbackFrameId = requestAnimationFrame(monitorSnippetPlayback);
+    }).catch(e => console.warn("Error al reproducir audio:", e));
   }
 
   // BOTÓN "🔁 Repetir": reproduce de nuevo sin cambiar de estado ni avanzar
