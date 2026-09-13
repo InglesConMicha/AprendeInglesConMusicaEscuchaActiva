@@ -354,6 +354,130 @@
     footer a { color: var(--accent); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
+    /* === TOP NAV === */
+    .top-nav {
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      background: rgba(6, 11, 20, 0.85);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 12px 24px;
+    }
+
+    .top-nav-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800; font-size: 0.98rem;
+    }
+
+    .nav-brand svg { color: var(--accent); }
+
+    .nav-links {
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .nav-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 10px;
+      font-size: 0.82rem; font-weight: 700;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      text-decoration: none; color: var(--muted);
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      transition: all 0.2s ease;
+    }
+
+    .nav-link:hover {
+      color: #fff; background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .nav-link.highlight {
+      background: rgba(56,189,248,0.12);
+      border-color: rgba(56,189,248,0.3);
+      color: var(--accent);
+    }
+
+    .nav-link.highlight:hover {
+      background: rgba(56,189,248,0.22);
+      border-color: rgba(56,189,248,0.5);
+      color: #fff;
+    }
+
+    /* === CREATOR BANNER === */
+    .creator-banner {
+      margin-top: 48px;
+      background: linear-gradient(135deg, rgba(14, 25, 45, 0.85) 0%, rgba(20, 36, 66, 0.75) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 20px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .creator-banner::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    }
+
+    .creator-banner-body {
+      max-width: 650px;
+    }
+
+    .creator-banner-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 20px; padding: 4px 10px; margin-bottom: 12px;
+    }
+
+    .creator-banner-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.35rem; font-weight: 800; color: #fff;
+      margin-bottom: 8px; line-height: 1.25;
+    }
+
+    .creator-banner-desc {
+      font-size: 0.88rem; color: rgba(240,249,255,0.65);
+      line-height: 1.55;
+    }
+
+    .btn-creator-action {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 14px 24px; border-radius: 14px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #040914; font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.92rem; font-weight: 800; text-decoration: none;
+      box-shadow: 0 4px 20px rgba(2, 132, 199, 0.4);
+      transition: all 0.22s ease;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    .btn-creator-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(2, 132, 199, 0.6);
+      background: linear-gradient(135deg, #0369a1, #0ea5e9);
+      color: #ffffff;
+    }
+
+    @media (max-width: 768px) {
+      .creator-banner { flex-direction: column; align-items: flex-start; padding: 22px; }
+      .btn-creator-action { width: 100%; }
+    }
+
     @media (max-width: 600px) {
       .hero-title { font-size: 1.7rem; }
       .songs-grid { grid-template-columns: 1fr; }
@@ -364,6 +488,32 @@
 <body>
 
 <canvas id="particles-canvas"></canvas>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <div class="top-nav-inner">
+    <a href="index.html" class="nav-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18V5l12-2v13"></path>
+        <circle cx="6" cy="18" r="3"></circle>
+        <circle cx="18" cy="16" r="3"></circle>
+      </svg>
+      Escucha Activa
+    </a>
+    <div class="nav-links">
+      <a href="../PaginaParaAprendeIngles/index.html" class="nav-link">Plataforma Quizzes</a>
+      <a href="player.html" class="nav-link">Reproductor</a>
+      <a href="crear-lrc.html" class="nav-link highlight">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+        Crear LRC
+      </a>
+    </div>
+  </div>
+</nav>
 
 <!-- HERO -->
 <section class="hero">
@@ -401,6 +551,25 @@
 
   <div class="songs-grid" id="song-grid"></div>
 
+  <!-- CREATOR BANNER -->
+  <div class="creator-banner">
+    <div class="creator-banner-body">
+      <div class="creator-banner-tag">Herramienta Creadora</div>
+      <h3 class="creator-banner-title">Crea tus propios archivos LRC al ritmo de la música</h3>
+      <p class="creator-banner-desc">
+        Carga cualquier MP3 o WAV, pega las letras y marca los tiempos con la barra espaciadora al compás de la voz. Exporta archivos .lrc estándar o sincronizados para Escucha Activa en menos de un minuto.
+      </p>
+    </div>
+    <a href="crear-lrc.html" class="btn-creator-action">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18V5l12-2v13"></path>
+        <circle cx="6" cy="18" r="3"></circle>
+        <circle cx="18" cy="16" r="3"></circle>
+      </svg>
+      Abrir Estudio Creador de LRC
+    </a>
+  </div>
+
   <div class="section-header">
     <h2 class="section-title">Cómo funciona</h2>
     <div class="section-line"></div>
@@ -434,8 +603,8 @@
 <footer>
   <p>Aprende Inglés con Música — Micha &copy; 2026</p>
   <p style="margin-top:5px;">
-    ¿Tienes tu propio archivo LRC?
-    <a href="player.html">Abre el reproductor manual</a> para cargarlo.
+    ¿Quieres sincronizar tu propia canción?
+    <a href="crear-lrc.html">Abre el Estudio Creador de LRC</a> · <a href="player.html">Reproductor manual</a>
   </p>
 </footer>
 
