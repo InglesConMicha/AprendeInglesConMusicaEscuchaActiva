@@ -1,0 +1,2675 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estudio de Voz en Off Profesional — Creador de Contenido</title>
+  <meta name="description" content="Estudio profesional de grabación y edición de voz en off para videos. Sincronización milimétrica, mezclador con nivelación de volumen, tomas múltiples y teleprompter.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2.2'%3E%3Cpath d='M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z'/%3E%3Cpath d='M19 10v2a7 7 0 0 1-14 0v-2'/%3E%3Cline x1='12' x2='12' y1='19' y2='22'/%3E%3C/svg%3E">
+  
+  <style>
+    :root {
+      --bg: #070b14;
+      --bg-surface: #0c1220;
+      --bg-card: rgba(15, 23, 42, 0.78);
+      --bg-glass: rgba(17, 24, 39, 0.65);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(56, 189, 248, 0.35);
+      
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --accent-glow: rgba(56, 189, 248, 0.28);
+      
+      --record: #ef4444;
+      --record-glow: rgba(239, 68, 68, 0.4);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --purple: #a855f7;
+      
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background glowing orbs */
+    .ambient-glow {
+      position: fixed;
+      pointer-events: none;
+      border-radius: 50%;
+      filter: blur(140px);
+      z-index: 0;
+      opacity: 0.22;
+    }
+    .glow-1 { top: -100px; left: 10%; width: 500px; height: 500px; background: #0284c7; }
+    .glow-2 { bottom: -100px; right: 5%; width: 600px; height: 600px; background: #6366f1; }
+    .glow-3 { top: 40%; left: 40%; width: 400px; height: 400px; background: #8b5cf6; opacity: 0.12; }
+
+    /* TOP NAVIGATION */
+    .nav-bar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(7, 11, 20, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #040914;
+      font-size: 0.65rem;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-center {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.86rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .nav-link:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-link.active {
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      transition: all 0.3s;
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--text-dim);
+      transition: all 0.3s;
+    }
+    .status-badge.ready .status-dot { background: var(--success); box-shadow: 0 0 10px var(--success); }
+    .status-badge.ready { color: var(--success); border-color: rgba(16, 185, 129, 0.3); }
+    .status-badge.recording .status-dot { background: var(--record); box-shadow: 0 0 12px var(--record); animation: pulseRecord 1s infinite; }
+    .status-badge.recording { color: #fca5a5; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); }
+
+    @keyframes pulseRecord {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.25); }
+    }
+
+    .btn-icon {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-icon:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* MAIN STUDIO CONTAINER */
+    .studio-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
+    }
+
+    /* TOP WORKSPACE (VIDEO + RACK) */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 1fr 390px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 1180px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* VIDEO PREVIEW SECTION */
+    .video-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .video-viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #020408;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #main-video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+      display: none;
+    }
+
+    /* Dropzone placeholder */
+    .video-dropzone {
+      position: absolute;
+      inset: 16px;
+      border: 2px dashed rgba(56, 189, 248, 0.35);
+      border-radius: var(--radius-md);
+      background: rgba(14, 23, 42, 0.55);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .video-dropzone:hover, .video-dropzone.dragover {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.08);
+      transform: scale(0.995);
+    }
+    .dropzone-icon {
+      width: 68px; height: 68px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(129,140,248,0.2));
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent);
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+    }
+    .dropzone-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .dropzone-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      max-width: 440px;
+      line-height: 1.5;
+    }
+    .btn-select-file {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #040914;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.88rem;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+      transition: all 0.2s;
+    }
+    .btn-select-file:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
+    }
+
+    /* Video countdown overlay */
+    .countdown-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .countdown-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .countdown-number {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 7rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 50px rgba(239, 68, 68, 0.8);
+      animation: zoomCount 0.9s infinite;
+    }
+    .countdown-label {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fca5a5;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    @keyframes zoomCount {
+      0% { transform: scale(0.6); opacity: 0; }
+      40% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Video Transport / Toolbar */
+    .video-controls {
+      padding: 14px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(10, 16, 28, 0.95);
+      border-top: 1px solid var(--border);
+    }
+
+    /* Progress bar */
+    .time-scrubber {
+      position: relative;
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .scrubber-played {
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    .scrubber-handle {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      transform: translate(-50%, -50%);
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+      pointer-events: none;
+      transition: transform 0.1s;
+    }
+    .time-scrubber:hover .scrubber-handle {
+      transform: translate(-50%, -50%) scale(1.25);
+    }
+
+    .transport-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .transport-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-transport {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: white;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-transport:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .btn-transport:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-play-pause {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--accent);
+      min-width: 100px;
+      justify-content: center;
+    }
+    .btn-play-pause:hover:not(:disabled) {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: var(--accent);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+    }
+
+    .time-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+    .time-current { color: #fff; font-weight: 700; }
+
+    .transport-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .speed-select {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+    .speed-select option { background: #0c1220; color: #fff; }
+
+    /* TELEPROMPTER / GUION EXPANDIBLE */
+    .teleprompter-drawer {
+      border-top: 1px solid var(--border);
+      background: rgba(6, 10, 18, 0.7);
+      padding: 14px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .teleprompter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .teleprompter-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.86rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .teleprompter-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .teleprompter-textarea {
+      width: 100%;
+      height: 90px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .teleprompter-textarea:focus {
+      border-color: var(--accent);
+    }
+
+    /* RIGHT PANEL: AUDIO CONTROL RACK & MIXER */
+    .audio-rack {
+      background: var(--bg-card);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .rack-section-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      padding-bottom: 8px;
+    }
+
+    /* MIC INPUT & VU METER */
+    .mic-control-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+
+    .mic-select-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-label {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .mic-select {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 0.84rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .mic-select option { background: #0a0f1d; }
+
+    /* VU Meter Bar */
+    .vu-meter-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .vu-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--text-dim);
+    }
+
+    .vu-meter-track {
+      position: relative;
+      height: 14px;
+      background: #020408;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      display: flex;
+    }
+
+    .vu-meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981 0%, #10b981 65%, #f59e0b 80%, #ef4444 100%);
+      transition: width 0.05s linear;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+    }
+
+    .vu-meter-peak {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: #fff;
+      box-shadow: 0 0 4px #fff;
+      left: 0%;
+      transition: left 0.1s ease;
+    }
+
+    .mic-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .toggle-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      user-select: none;
+    }
+    .toggle-pill input { display: none; }
+    .toggle-switch {
+      width: 34px; height: 18px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+    .toggle-pill input:checked + .toggle-switch {
+      background: var(--accent);
+    }
+    .toggle-pill input:checked + .toggle-switch::after {
+      transform: translateX(16px);
+      background: #040914;
+    }
+
+    /* MIXER CONTROLS */
+    .mixer-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .fader-card {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .fader-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .fader-name {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .fader-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .range-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      cursor: pointer;
+      position: relative;
+    }
+    .range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      cursor: pointer;
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+      transition: transform 0.1s;
+    }
+    .range-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Auto-Ducking Box */
+    .ducking-box {
+      background: rgba(168, 85, 247, 0.08);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ducking-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .ducking-desc {
+      font-size: 0.74rem;
+      color: rgba(240, 249, 255, 0.6);
+      line-height: 1.4;
+    }
+
+    /* PRESETS & LATENCY */
+    .presets-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-preset {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+      text-align: center;
+    }
+    .btn-preset:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+    .btn-preset.active {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    /* TIMELINE & RECORDING ACTION SECTION */
+    .recording-section {
+      background: var(--bg-card);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Master Action Buttons */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .action-group-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-record-main {
+      padding: 14px 28px;
+      border-radius: 16px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 6px 24px var(--record-glow);
+      transition: all 0.22s ease;
+      letter-spacing: -0.01em;
+    }
+    .btn-record-main:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(239, 68, 68, 0.6);
+      background: linear-gradient(135deg, #f87171, #ef4444);
+    }
+    .btn-record-main.is-recording {
+      background: linear-gradient(135deg, #374151, #1f2937);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+    .btn-record-main:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-punch-in {
+      padding: 14px 22px;
+      border-radius: 16px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #fff;
+      background: rgba(168, 85, 247, 0.18);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-punch-in:hover:not(:disabled) {
+      background: rgba(168, 85, 247, 0.3);
+      border-color: var(--purple);
+      transform: translateY(-1px);
+    }
+    .btn-punch-in:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .action-group-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-export-video {
+      padding: 14px 24px;
+      border-radius: 16px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #040914;
+      background: linear-gradient(135deg, #10b981, #34d399);
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+      transition: all 0.22s ease;
+    }
+    .btn-export-video:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(16, 185, 129, 0.5);
+    }
+    .btn-export-video:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-export-audio {
+      padding: 14px 20px;
+      border-radius: 16px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-export-audio:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .btn-export-audio:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Waveform Timeline Container */
+    .timeline-card {
+      background: #050811;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+
+    .timeline-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .timeline-track-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .waveform-wrapper {
+      position: relative;
+      width: 100%;
+      height: 96px;
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    #waveform-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Waveform Playhead Needle */
+    .timeline-playhead {
+      position: absolute;
+      top: 0; bottom: 0;
+      left: 0%;
+      width: 2px;
+      background: #38bdf8;
+      box-shadow: 0 0 8px #38bdf8;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .timeline-playhead::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 7px solid #38bdf8;
+    }
+
+    /* TAKES MANAGER (TOMAS) */
+    .takes-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .takes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .takes-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .takes-list {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+    .takes-list::-webkit-scrollbar { height: 6px; }
+    .takes-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+
+    .take-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .take-chip:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .take-chip.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .take-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .take-name { font-size: 0.82rem; font-weight: 700; color: #fff; }
+    .take-meta { font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+    .take-delete {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+    .take-delete:hover {
+      color: var(--record);
+    }
+
+    /* MODAL: SHORTCUTS & HELP */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: #0e1526;
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-lg);
+      max-width: 540px;
+      width: 100%;
+      padding: 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .modal-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .shortcut-table {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .shortcut-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.88rem;
+    }
+    .kbd-badge {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: var(--accent);
+    }
+
+    /* EXPORT PROGRESS OVERLAY */
+    .export-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 7, 14, 0.88);
+      backdrop-filter: blur(14px);
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .export-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .export-card {
+      background: #0d1527;
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }
+    .export-spinner {
+      width: 48px; height: 48px;
+      border: 4px solid rgba(56, 189, 248, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .export-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .export-desc {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .export-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .export-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981, #38bdf8);
+      transition: width 0.1s linear;
+    }
+  </style>
+</head>
+<body>
+
+<div class="ambient-glow glow-1"></div>
+<div class="ambient-glow glow-2"></div>
+<div class="ambient-glow glow-3"></div>
+
+<!-- NAVIGATION -->
+<nav class="nav-bar">
+  <div class="nav-left">
+    <a href="index.html" class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent)">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+      Creador de Contenido
+      <span class="brand-badge">Estudio</span>
+    </a>
+  </div>
+
+  <div class="nav-center">
+    <a href="index.html" class="nav-link">Inicio</a>
+    <a href="voz-en-off.html" class="nav-link active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" x2="12" y1="19" y2="22"/>
+      </svg>
+      Voz en Off
+    </a>
+    <a href="crear-lrc.html" class="nav-link">Crear LRC</a>
+    <a href="player.html" class="nav-link">Escucha Activa</a>
+  </div>
+
+  <div class="nav-right">
+    <div class="status-badge" id="studio-status">
+      <div class="status-dot"></div>
+      <span id="status-text">Sin video</span>
+    </div>
+    <button class="btn-icon" id="btn-open-help" title="Atajos de teclado y ayuda">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<!-- MAIN STUDIO WORKSPACE -->
+<main class="studio-container">
+
+  <!-- TOP WORKSPACE: VIDEO PREVIEW + MIXER RACK -->
+  <div class="workspace-grid">
+
+    <!-- LEFT: VIDEO DISPLAY -->
+    <div class="video-card">
+      <div class="video-viewport" id="viewport-container">
+        
+        <!-- Video Element -->
+        <video id="main-video" playsinline></video>
+
+        <!-- Dropzone for Video File -->
+        <div class="video-dropzone" id="video-dropzone">
+          <div class="dropzone-icon">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+              <line x1="7" y1="2" x2="7" y2="22"></line>
+              <line x1="17" y1="2" x2="17" y2="22"></line>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <line x1="2" y1="7" x2="7" y2="7"></line>
+              <line x1="2" y1="17" x2="7" y2="17"></line>
+              <line x1="17" y1="17" x2="22" y2="17"></line>
+              <line x1="17" y1="7" x2="22" y2="7"></line>
+            </svg>
+          </div>
+          <h2 class="dropzone-title">Arrastra tu video aquí</h2>
+          <p class="dropzone-desc">Sube cualquier video en MP4, WebM o MOV para sincronizar y grabar tu voz en off con precisión profesional.</p>
+          <button class="btn-select-file" id="btn-browse-video">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Seleccionar Video del Equipo
+          </button>
+          <input type="file" id="video-file-input" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/*" style="display: none;">
+        </div>
+
+        <!-- 3-2-1 Countdown Overlay -->
+        <div class="countdown-overlay" id="countdown-overlay">
+          <div class="countdown-number" id="countdown-num">3</div>
+          <div class="countdown-label">¡Preparando Grabación!</div>
+        </div>
+
+      </div>
+
+      <!-- Video Controls & Time Scrubber -->
+      <div class="video-controls">
+        <div class="time-scrubber" id="time-scrubber">
+          <div class="scrubber-played" id="scrubber-played"></div>
+          <div class="scrubber-handle" id="scrubber-handle"></div>
+        </div>
+
+        <div class="transport-bar">
+          <div class="transport-left">
+            <button class="btn-transport btn-play-pause" id="btn-play-pause" disabled>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" id="play-icon">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <span id="play-text">Reproducir</span>
+            </button>
+            <button class="btn-transport" id="btn-skip-back" title="Retroceder 5 segundos (Flecha Izq)" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 19 2 12 11 5 11 19"></polygon>
+                <polygon points="22 19 13 12 22 5 22 19"></polygon>
+              </svg>
+              -5s
+            </button>
+            <button class="btn-transport" id="btn-skip-forward" title="Avanzar 5 segundos (Flecha Der)" disabled>
+              +5s
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 19 22 12 13 5 13 19"></polygon>
+                <polygon points="2 19 11 12 2 5 2 19"></polygon>
+              </svg>
+            </button>
+            <div class="time-display">
+              <span class="time-current" id="time-current">00:00.0</span> / <span id="time-duration">00:00.0</span>
+            </div>
+          </div>
+
+          <div class="transport-right">
+            <select class="speed-select" id="speed-select" title="Velocidad de reproducción">
+              <option value="0.5">0.50x</option>
+              <option value="0.75">0.75x</option>
+              <option value="1" selected>1.00x (Normal)</option>
+              <option value="1.25">1.25x</option>
+              <option value="1.5">1.50x</option>
+            </select>
+            <button class="btn-icon" id="btn-pip" title="Modo Picture-in-Picture">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                <rect x="12" y="9" width="8" height="6" rx="1"></rect>
+              </svg>
+            </button>
+            <button class="btn-icon" id="btn-change-video" title="Cambiar video">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                <polyline points="16 6 12 2 8 6"></polyline>
+                <line x1="12" y1="2" x2="12" y2="15"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TELEPROMPTER / GUION INTEGRADO -->
+      <div class="teleprompter-drawer">
+        <div class="teleprompter-header">
+          <div class="teleprompter-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Guion / Teleprompter
+          </div>
+          <div class="teleprompter-tools">
+            <button class="btn-transport" style="padding: 4px 8px; font-size: 0.74rem;" id="btn-font-size-up">A+</button>
+            <button class="btn-transport" style="padding: 4px 8px; font-size: 0.74rem;" id="btn-font-size-down">A-</button>
+            <label class="toggle-pill" style="font-size: 0.75rem;">
+              <input type="checkbox" id="check-autoscroll">
+              <span class="toggle-switch"></span>
+              Auto-Scroll
+            </label>
+          </div>
+        </div>
+        <textarea class="teleprompter-textarea" id="teleprompter-text" placeholder="Escribe o pega aquí el guion o lo que vas a decir mientras el video se reproduce..."></textarea>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: AUDIO CONTROL RACK & MIXER -->
+    <aside class="audio-rack">
+      
+      <!-- 1. Mic & Live Monitor -->
+      <div class="rack-section-title">
+        <span>🎙️ Entrada & Vúmetro</span>
+      </div>
+
+      <div class="mic-control-box">
+        <div class="mic-select-row">
+          <label class="field-label" for="mic-select">Micrófono</label>
+          <select class="mic-select" id="mic-select">
+            <option value="">Cargando dispositivos...</option>
+          </select>
+        </div>
+
+        <div class="vu-meter-wrap">
+          <div class="vu-labels">
+            <span>-∞</span>
+            <span>-24 dB</span>
+            <span>-12 dB</span>
+            <span>-6 dB</span>
+            <span>0 dB</span>
+          </div>
+          <div class="vu-meter-track">
+            <div class="vu-meter-fill" id="vu-fill"></div>
+            <div class="vu-meter-peak" id="vu-peak"></div>
+          </div>
+        </div>
+
+        <div class="mic-actions-row">
+          <label class="toggle-pill" title="Escuchar tu propia voz mientras hablas (¡usa auriculares!)">
+            <input type="checkbox" id="check-mic-monitor">
+            <span class="toggle-switch"></span>
+            Monitorear Voz (Auriculares)
+          </label>
+        </div>
+      </div>
+
+      <!-- 2. Mixer: Faders de Nivelación de Volumen -->
+      <div class="rack-section-title">
+        <span>🎚️ Mezclador de Volúmenes</span>
+      </div>
+
+      <div class="mixer-grid">
+        <!-- Video Original Volume -->
+        <div class="fader-card">
+          <div class="fader-header">
+            <span class="fader-name">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon></svg>
+              Audio del Video Original
+            </span>
+            <span class="fader-value" id="val-video-vol">100%</span>
+          </div>
+          <input type="range" class="range-slider" id="slider-video-vol" min="0" max="200" value="100">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <label class="toggle-pill" style="font-size: 0.76rem;">
+              <input type="checkbox" id="check-mute-video">
+              <span class="toggle-switch"></span>
+              Silenciar Video
+            </label>
+            <span style="font-size: 0.72rem; color: var(--text-dim);">Máx 200%</span>
+          </div>
+        </div>
+
+        <!-- Voiceover Volume -->
+        <div class="fader-card">
+          <div class="fader-header">
+            <span class="fader-name">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/></svg>
+              Volumen Voz en Off
+            </span>
+            <span class="fader-value" id="val-voice-vol" style="color: var(--success);">140%</span>
+          </div>
+          <input type="range" class="range-slider" id="slider-voice-vol" min="0" max="300" value="140">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <span style="font-size: 0.72rem; color: var(--text-dim);">Ganancia limpia</span>
+            <span style="font-size: 0.72rem; color: var(--text-dim);">Máx 300%</span>
+          </div>
+        </div>
+
+        <!-- Auto-Ducking -->
+        <div class="ducking-box">
+          <div class="ducking-header">
+            <span class="fader-name" style="color: var(--purple);">
+              ⚡ Auto-Ducking Inteligente
+            </span>
+            <label class="toggle-pill">
+              <input type="checkbox" id="check-ducking" checked>
+              <span class="toggle-switch"></span>
+            </label>
+          </div>
+          <p class="ducking-desc">
+            Atenúa el volumen del video original al 20% automáticamente cada vez que hablas, para que tu voz se entienda clara como en televisión o radio.
+          </p>
+        </div>
+      </div>
+
+      <!-- 3. Presets Vocales y Latencia -->
+      <div class="rack-section-title">
+        <span>✨ Filtros Vocales & Sincronía</span>
+      </div>
+
+      <div class="presets-row">
+        <button class="btn-preset active" data-preset="clarity">Claridad & Brillo</button>
+        <button class="btn-preset" data-preset="radio">Voz de Radio (Warm)</button>
+        <button class="btn-preset" data-preset="podcast">Podcast Pro (Punch)</button>
+        <button class="btn-preset" data-preset="neutral">Plano / Sin Filtro</button>
+      </div>
+
+      <!-- Audio Sync Offset -->
+      <div class="fader-card" style="padding: 10px 14px;">
+        <div class="fader-header">
+          <span class="fader-name" style="font-size: 0.78rem;">Compensar Latencia Micrófono</span>
+          <span class="fader-value" id="val-sync-offset" style="font-size: 0.78rem;">0 ms</span>
+        </div>
+        <input type="range" class="range-slider" id="slider-sync-offset" min="-400" max="400" step="10" value="0">
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- BOTTOM SECTION: TIMELINE, WAVEFORM, TAKES & EXPORT -->
+  <section class="recording-section">
+    
+    <!-- Primary Action Buttons -->
+    <div class="action-bar">
+      <div class="action-group-left">
+        <button class="btn-record-main" id="btn-record-main" disabled>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="12" r="10"></circle>
+          </svg>
+          <span id="btn-record-text">Grabar Voz en Off</span>
+        </button>
+
+        <button class="btn-punch-in" id="btn-punch-in" title="Regrabar solo desde la posición actual del cursor (Punch-in)" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="22" y1="12" x2="18" y2="12"></line>
+            <line x1="6" y1="12" x2="2" y2="12"></line>
+            <line x1="12" y1="6" x2="12" y2="2"></line>
+            <line x1="12" y1="22" x2="12" y2="18"></line>
+          </svg>
+          Regrabar desde aquí (Punch-In)
+        </button>
+      </div>
+
+      <div class="action-group-right">
+        <button class="btn-export-audio" id="btn-export-audio" title="Exportar únicamente el audio grabado en alta fidelidad" disabled>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Descargar Audio (.WAV)
+        </button>
+
+        <button class="btn-export-video" id="btn-export-video" title="Renderizar y descargar video con el audio original y la voz en off mezclados" disabled>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Exportar Video Final Mezclado
+        </button>
+      </div>
+    </div>
+
+    <!-- Waveform Timeline Track -->
+    <div class="timeline-card">
+      <div class="timeline-header">
+        <span class="timeline-track-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg>
+          Pista de Voz en Off (Forma de Onda)
+        </span>
+        <span style="font-size: 0.74rem; color: var(--text-dim);">Haz clic en cualquier punto para mover el cabezal</span>
+      </div>
+
+      <div class="waveform-wrapper" id="waveform-wrapper">
+        <canvas id="waveform-canvas"></canvas>
+        <div class="timeline-playhead" id="timeline-playhead"></div>
+      </div>
+    </div>
+
+    <!-- Multi-Take Management -->
+    <div class="takes-box">
+      <div class="takes-header">
+        <span class="takes-title">Tomas Grabadas (<span id="takes-count">0</span>)</span>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Selecciona la toma que deseas incluir en el video final</span>
+      </div>
+      <div class="takes-list" id="takes-list">
+        <div style="font-size: 0.84rem; color: var(--text-dim); padding: 6px 0;">No hay tomas grabadas aún. Presiona "Grabar Voz en Off" para comenzar.</div>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- MODAL: AYUDA Y ATAJOS DE TECLADO -->
+<div class="modal-backdrop" id="help-modal">
+  <div class="modal-content">
+    <div class="modal-title">
+      <span>Atajos de Teclado & Guía Rápida</span>
+      <button class="btn-icon" id="btn-close-help">✕</button>
+    </div>
+    <div class="shortcut-table">
+      <div class="shortcut-row">
+        <span>Reproducir / Pausar video</span>
+        <span class="kbd-badge">Espacio</span>
+      </div>
+      <div class="shortcut-row">
+        <span>Iniciar / Detener Grabación</span>
+        <span class="kbd-badge">R</span>
+      </div>
+      <div class="shortcut-row">
+        <span>Retroceder 5 segundos</span>
+        <span class="kbd-badge">← (Flecha Izq)</span>
+      </div>
+      <div class="shortcut-row">
+        <span>Avanzar 5 segundos</span>
+        <span class="kbd-badge">→ (Flecha Der)</span>
+      </div>
+      <div class="shortcut-row">
+        <span>Silenciar / Activar video</span>
+        <span class="kbd-badge">M</span>
+      </div>
+      <div class="shortcut-row">
+        <span>Regrabar desde posición actual (Punch-In)</span>
+        <span class="kbd-badge">P</span>
+      </div>
+    </div>
+    <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+      💡 <strong>Consejo Pro:</strong> Para obtener la máxima nitidez en tu video, usa auriculares al grabar para evitar que el sonido de tus altavoces se filtre al micrófono.
+    </p>
+  </div>
+</div>
+
+<!-- EXPORT PROGRESS OVERLAY -->
+<div class="export-overlay" id="export-overlay">
+  <div class="export-card">
+    <div class="export-spinner"></div>
+    <h3 class="export-title" id="export-title">Renderizando Video Final...</h3>
+    <p class="export-desc" id="export-desc">Estamos combinando los cuadros del video con el audio original y tu pista de voz en off nivelada. Por favor espera unos momentos.</p>
+    <div class="export-bar">
+      <div class="export-bar-fill" id="export-bar-fill"></div>
+    </div>
+    <span id="export-percent" style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent);">0%</span>
+  </div>
+</div>
+
+<script>
+  /* ==========================================================
+     ESTUDIO DE VOZ EN OFF PROFESIONAL - CORE ENGINE
+     ========================================================== */
+
+  // Audio Context & Nodes
+  let audioCtx = null;
+  let micStream = null;
+  let micSourceNode = null;
+  let micGainNode = null;
+  let analyserNode = null;
+  let monitorGainNode = null;
+  
+  let videoSourceNode = null;
+  let videoGainNode = null;
+  let voiceTrackGainNode = null;
+  let compressorNode = null;
+  let eqFilterNode = null;
+  
+  // Media Elements & State
+  const video = document.getElementById('main-video');
+  let videoFile = null;
+  let videoDuration = 0;
+  let isRecording = false;
+  let isPlaying = false;
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  let recordStartTime = 0;
+  let recordVideoOffset = 0;
+
+  // Takes & Audio Buffers
+  let takes = [];
+  let activeTakeIndex = -1;
+  let currentAudioBuffer = null;
+  let activeAudioSource = null;
+
+  // Settings
+  let videoVolume = 1.0;
+  let voiceVolume = 1.4;
+  let isVideoMuted = false;
+  let isDuckingEnabled = true;
+  let syncOffsetMs = 0;
+  let activePreset = 'clarity';
+
+  // DOM Elements
+  const btnPlayPause = document.getElementById('btn-play-pause');
+  const playText = document.getElementById('play-text');
+  const playIcon = document.getElementById('play-icon');
+  const timeCurrent = document.getElementById('time-current');
+  const timeDuration = document.getElementById('time-duration');
+  const scrubber = document.getElementById('time-scrubber');
+  const scrubberPlayed = document.getElementById('scrubber-played');
+  const scrubberHandle = document.getElementById('scrubber-handle');
+  const speedSelect = document.getElementById('speed-select');
+  const btnSkipBack = document.getElementById('btn-skip-back');
+  const btnSkipForward = document.getElementById('btn-skip-forward');
+  const btnPip = document.getElementById('btn-pip');
+  const btnChangeVideo = document.getElementById('btn-change-video');
+  const videoDropzone = document.getElementById('video-dropzone');
+  const videoFileInput = document.getElementById('video-file-input');
+  const btnBrowseVideo = document.getElementById('btn-browse-video');
+  
+  const studioStatus = document.getElementById('studio-status');
+  const statusText = document.getElementById('status-text');
+  
+  const micSelect = document.getElementById('mic-select');
+  const vuFill = document.getElementById('vu-fill');
+  const vuPeak = document.getElementById('vu-peak');
+  const checkMicMonitor = document.getElementById('check-mic-monitor');
+  
+  const sliderVideoVol = document.getElementById('slider-video-vol');
+  const valVideoVol = document.getElementById('val-video-vol');
+  const checkMuteVideo = document.getElementById('check-mute-video');
+  
+  const sliderVoiceVol = document.getElementById('slider-voice-vol');
+  const valVoiceVol = document.getElementById('val-voice-vol');
+  const checkDucking = document.getElementById('check-ducking');
+  const sliderSyncOffset = document.getElementById('slider-sync-offset');
+  const valSyncOffset = document.getElementById('val-sync-offset');
+  
+  const btnRecordMain = document.getElementById('btn-record-main');
+  const btnRecordText = document.getElementById('btn-record-text');
+  const btnPunchIn = document.getElementById('btn-punch-in');
+  const btnExportVideo = document.getElementById('btn-export-video');
+  const btnExportAudio = document.getElementById('btn-export-audio');
+  
+  const waveformCanvas = document.getElementById('waveform-canvas');
+  const waveformWrapper = document.getElementById('waveform-wrapper');
+  const timelinePlayhead = document.getElementById('timeline-playhead');
+  const takesList = document.getElementById('takes-list');
+  const takesCount = document.getElementById('takes-count');
+  
+  const teleprompterText = document.getElementById('teleprompter-text');
+  const checkAutoscroll = document.getElementById('check-autoscroll');
+  const btnFontSizeUp = document.getElementById('btn-font-size-up');
+  const btnFontSizeDown = document.getElementById('btn-font-size-down');
+  
+  const countdownOverlay = document.getElementById('countdown-overlay');
+  const countdownNum = document.getElementById('countdown-num');
+  
+  const helpModal = document.getElementById('help-modal');
+  const btnOpenHelp = document.getElementById('btn-open-help');
+  const btnCloseHelp = document.getElementById('btn-close-help');
+  
+  const exportOverlay = document.getElementById('export-overlay');
+  const exportTitle = document.getElementById('export-title');
+  const exportDesc = document.getElementById('export-desc');
+  const exportBarFill = document.getElementById('export-bar-fill');
+  const exportPercent = document.getElementById('export-percent');
+
+  // Waveform canvas rendering context
+  const waveCtx = waveformCanvas.getContext('2d');
+
+  /* ==========================================================
+     AUDIO INITIALIZATION
+     ========================================================== */
+  async function initAudio() {
+    if (!audioCtx) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContextClass();
+    }
+    if (audioCtx.state === 'suspended') {
+      await audioCtx.resume();
+    }
+
+    // Video Audio Processing Chain
+    if (!videoSourceNode && video.src) {
+      try {
+        videoSourceNode = audioCtx.createMediaElementSource(video);
+        videoGainNode = audioCtx.createGain();
+        videoGainNode.gain.value = isVideoMuted ? 0 : videoVolume;
+        videoSourceNode.connect(videoGainNode);
+        videoGainNode.connect(audioCtx.destination);
+      } catch (e) {
+        console.warn("Could not attach MediaElementSource:", e);
+      }
+    }
+
+    // Voice FX Processing Chain
+    if (!voiceTrackGainNode) {
+      voiceTrackGainNode = audioCtx.createGain();
+      voiceTrackGainNode.gain.value = voiceVolume;
+
+      // Vocal Compressor
+      compressorNode = audioCtx.createDynamicsCompressor();
+      compressorNode.threshold.setValueAtTime(-24, audioCtx.currentTime);
+      compressorNode.knee.setValueAtTime(12, audioCtx.currentTime);
+      compressorNode.ratio.setValueAtTime(4, audioCtx.currentTime);
+      compressorNode.attack.setValueAtTime(0.003, audioCtx.currentTime);
+      compressorNode.release.setValueAtTime(0.25, audioCtx.currentTime);
+
+      // EQ Filter Node
+      eqFilterNode = audioCtx.createBiquadFilter();
+      applyPreset('clarity');
+
+      voiceTrackGainNode.connect(eqFilterNode);
+      eqFilterNode.connect(compressorNode);
+      compressorNode.connect(audioCtx.destination);
+    }
+  }
+
+  // Enumerate Microphones
+  async function setupMicrophoneList() {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audioInputs = devices.filter(d => d.kind === 'audioinput');
+      micSelect.innerHTML = '';
+      if (audioInputs.length === 0) {
+        micSelect.innerHTML = '<option value="">Micrófono predeterminado</option>';
+      } else {
+        audioInputs.forEach((device, index) => {
+          const opt = document.createElement('option');
+          opt.value = device.deviceId;
+          opt.textContent = device.label || `Micrófono ${index + 1}`;
+          micSelect.appendChild(opt);
+        });
+      }
+    } catch (err) {
+      console.warn("Error enumerating devices:", err);
+      micSelect.innerHTML = '<option value="">Micrófono estándar</option>';
+    }
+  }
+
+  // Connect Microphone Stream & VU Meter
+  async function connectMicrophone(deviceId = null) {
+    try {
+      if (micStream) {
+        micStream.getTracks().forEach(t => t.stop());
+      }
+      await initAudio();
+
+      const constraints = {
+        audio: {
+          deviceId: deviceId ? { exact: deviceId } : undefined,
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      };
+
+      micStream = await navigator.mediaDevices.getUserMedia(constraints);
+      await setupMicrophoneList();
+
+      // VU Meter Analyser
+      micSourceNode = audioCtx.createMediaStreamSource(micStream);
+      analyserNode = audioCtx.createAnalyser();
+      analyserNode.fftSize = 512;
+      analyserNode.smoothingTimeConstant = 0.8;
+
+      micGainNode = audioCtx.createGain();
+      micGainNode.gain.value = 1.0;
+
+      monitorGainNode = audioCtx.createGain();
+      monitorGainNode.gain.value = checkMicMonitor.checked ? 1.0 : 0.0;
+
+      micSourceNode.connect(micGainNode);
+      micGainNode.connect(analyserNode);
+      micGainNode.connect(monitorGainNode);
+      monitorGainNode.connect(audioCtx.destination);
+
+      startVuMeter();
+    } catch (err) {
+      console.error("Microphone error:", err);
+      alert("No se pudo acceder al micrófono. Por favor permite los permisos de audio en tu navegador.");
+    }
+  }
+
+  // Real-time VU Meter rendering
+  let maxPeak = 0;
+  function startVuMeter() {
+    if (!analyserNode) return;
+    const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+
+    function renderVu() {
+      analyserNode.getByteFrequencyData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += dataArray[i];
+      }
+      const avg = sum / dataArray.length;
+      const percent = Math.min(100, Math.round((avg / 128) * 100));
+
+      vuFill.style.width = percent + '%';
+
+      if (percent > maxPeak) {
+        maxPeak = percent;
+        vuPeak.style.left = maxPeak + '%';
+      } else {
+        maxPeak = Math.max(0, maxPeak - 1);
+        vuPeak.style.left = maxPeak + '%';
+      }
+
+      requestAnimationFrame(renderVu);
+    }
+    renderVu();
+  }
+
+  /* ==========================================================
+     VIDEO LOADING & HANDLING
+     ========================================================== */
+  btnBrowseVideo.addEventListener('click', () => videoFileInput.click());
+  videoDropzone.addEventListener('click', (e) => {
+    if (e.target !== btnBrowseVideo && !btnBrowseVideo.contains(e.target)) {
+      videoFileInput.click();
+    }
+  });
+
+  videoFileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) {
+      loadVideoFile(e.target.files[0]);
+    }
+  });
+
+  // Drag & Drop
+  videoDropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    videoDropzone.classList.add('dragover');
+  });
+  videoDropzone.addEventListener('dragleave', () => {
+    videoDropzone.classList.remove('dragover');
+  });
+  videoDropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    videoDropzone.classList.remove('dragover');
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      loadVideoFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  btnChangeVideo.addEventListener('click', () => videoFileInput.click());
+
+  function loadVideoFile(file) {
+    videoFile = file;
+    const videoUrl = URL.createObjectURL(file);
+    video.src = videoUrl;
+    video.style.display = 'block';
+    videoDropzone.style.display = 'none';
+
+    video.onloadedmetadata = () => {
+      videoDuration = video.duration;
+      timeDuration.textContent = formatTime(videoDuration);
+      enableControls(true);
+      setStudioStatus('ready', 'Video Listo');
+      initAudio();
+      connectMicrophone();
+      resizeWaveform();
+      drawWaveform();
+    };
+  }
+
+  function enableControls(enabled) {
+    btnPlayPause.disabled = !enabled;
+    btnSkipBack.disabled = !enabled;
+    btnSkipForward.disabled = !enabled;
+    btnRecordMain.disabled = !enabled;
+    btnPunchIn.disabled = !enabled;
+  }
+
+  function setStudioStatus(type, text) {
+    studioStatus.className = 'status-badge ' + type;
+    statusText.textContent = text;
+  }
+
+  /* ==========================================================
+     PLAYBACK & SYNC
+     ========================================================== */
+  function togglePlayPause() {
+    if (isRecording) {
+      stopRecording();
+      return;
+    }
+    if (video.paused) {
+      playVideoAndAudio();
+    } else {
+      pauseVideoAndAudio();
+    }
+  }
+
+  btnPlayPause.addEventListener('click', togglePlayPause);
+
+  function playVideoAndAudio() {
+    initAudio();
+    video.play();
+    isPlaying = true;
+    playText.textContent = 'Pausar';
+    playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+    
+    // Play Active Voice Take if available
+    playActiveVoiceTake(video.currentTime);
+  }
+
+  function pauseVideoAndAudio() {
+    video.pause();
+    isPlaying = false;
+    playText.textContent = 'Reproducir';
+    playIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+    
+    stopActiveVoiceTake();
+  }
+
+  video.addEventListener('timeupdate', () => {
+    if (videoDuration > 0) {
+      const current = video.currentTime;
+      timeCurrent.textContent = formatTime(current);
+      const pct = (current / videoDuration) * 100;
+      scrubberPlayed.style.width = pct + '%';
+      scrubberHandle.style.left = pct + '%';
+      timelinePlayhead.style.left = pct + '%';
+
+      // Teleprompter Auto-Scroll
+      if (checkAutoscroll.checked) {
+        const scrollPct = current / videoDuration;
+        teleprompterText.scrollTop = scrollPct * (teleprompterText.scrollHeight - teleprompterText.clientHeight);
+      }
+    }
+  });
+
+  video.addEventListener('ended', () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      pauseVideoAndAudio();
+    }
+  });
+
+  // Time scrubber seeking
+  scrubber.addEventListener('click', (e) => {
+    if (!videoDuration) return;
+    const rect = scrubber.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    seekToTime(pos * videoDuration);
+  });
+
+  waveformWrapper.addEventListener('click', (e) => {
+    if (!videoDuration) return;
+    const rect = waveformWrapper.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    seekToTime(pos * videoDuration);
+  });
+
+  function seekToTime(targetTime) {
+    targetTime = Math.max(0, Math.min(videoDuration, targetTime));
+    video.currentTime = targetTime;
+    if (isPlaying) {
+      playActiveVoiceTake(targetTime);
+    }
+  }
+
+  btnSkipBack.addEventListener('click', () => seekToTime(video.currentTime - 5));
+  btnSkipForward.addEventListener('click', () => seekToTime(video.currentTime + 5));
+
+  speedSelect.addEventListener('change', () => {
+    video.playbackRate = parseFloat(speedSelect.value);
+  });
+
+  btnPip.addEventListener('click', async () => {
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (video) {
+        await video.requestPictureInPicture();
+      }
+    } catch (e) {
+      console.warn("PiP error:", e);
+    }
+  });
+
+  /* ==========================================================
+     RECORDING & MULTI-TAKES (PUNCH-IN)
+     ========================================================== */
+  btnRecordMain.addEventListener('click', () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startCountdownAndRecord(0);
+    }
+  });
+
+  btnPunchIn.addEventListener('click', () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startCountdownAndRecord(video.currentTime);
+    }
+  });
+
+  function startCountdownAndRecord(startOffset = 0) {
+    seekToTime(startOffset);
+    pauseVideoAndAudio();
+    
+    countdownOverlay.classList.add('active');
+    let count = 3;
+    countdownNum.textContent = count;
+
+    const countInterval = setInterval(() => {
+      count--;
+      if (count > 0) {
+        countdownNum.textContent = count;
+      } else {
+        clearInterval(countInterval);
+        countdownOverlay.classList.remove('active');
+        beginRecordingSession(startOffset);
+      }
+    }, 900);
+  }
+
+  async function beginRecordingSession(startOffset) {
+    if (!micStream) {
+      await connectMicrophone();
+    }
+    await initAudio();
+
+    recordedChunks = [];
+    recordVideoOffset = startOffset;
+    recordStartTime = performance.now();
+
+    // Setup MediaRecorder
+    const options = { mimeType: 'audio/webm;codecs=opus' };
+    try {
+      mediaRecorder = new MediaRecorder(micStream, options);
+    } catch (e) {
+      mediaRecorder = new MediaRecorder(micStream);
+    }
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) {
+        recordedChunks.push(e.data);
+      }
+    };
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+      await processRecordedTake(audioBlob, recordVideoOffset);
+    };
+
+    mediaRecorder.start(100);
+    isRecording = true;
+
+    // Apply auto-ducking on video if enabled
+    if (isDuckingEnabled && videoGainNode) {
+      videoGainNode.gain.setTargetAtTime(videoVolume * 0.2, audioCtx.currentTime, 0.1);
+    }
+
+    // Play video
+    video.play();
+    isPlaying = true;
+
+    // UI Updates
+    setStudioStatus('recording', 'GRABANDO...');
+    btnRecordMain.classList.add('is-recording');
+    btnRecordText.textContent = '⏹️ Detener Grabación';
+    btnPunchIn.disabled = true;
+  }
+
+  function stopRecording() {
+    if (!isRecording) return;
+    isRecording = false;
+
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    }
+
+    pauseVideoAndAudio();
+
+    // Restore video volume from ducking
+    if (videoGainNode) {
+      videoGainNode.gain.setTargetAtTime(isVideoMuted ? 0 : videoVolume, audioCtx.currentTime, 0.1);
+    }
+
+    btnRecordMain.classList.remove('is-recording');
+    btnRecordText.textContent = 'Grabar Voz en Off';
+    btnPunchIn.disabled = false;
+    setStudioStatus('ready', 'Toma Guardada');
+  }
+
+  // Process take: Decode into AudioBuffer & add to list
+  async function processRecordedTake(blob, startOffset) {
+    const arrayBuffer = await blob.arrayBuffer();
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+    const takeNumber = takes.length + 1;
+    const newTake = {
+      id: 'take_' + Date.now(),
+      name: `Toma ${takeNumber}`,
+      offset: startOffset,
+      duration: audioBuffer.duration,
+      blob: blob,
+      audioBuffer: audioBuffer,
+      timestamp: new Date().toLocaleTimeString()
+    };
+
+    takes.push(newTake);
+    setActiveTake(takes.length - 1);
+    renderTakesList();
+    btnExportVideo.disabled = false;
+    btnExportAudio.disabled = false;
+  }
+
+  function setActiveTake(index) {
+    if (index >= 0 && index < takes.length) {
+      activeTakeIndex = index;
+      currentAudioBuffer = takes[index].audioBuffer;
+      drawWaveform();
+      renderTakesList();
+    }
+  }
+
+  function renderTakesList() {
+    takesCount.textContent = takes.length;
+    if (takes.length === 0) {
+      takesList.innerHTML = '<div style="font-size: 0.84rem; color: var(--text-dim); padding: 6px 0;">No hay tomas grabadas aún. Presiona "Grabar Voz en Off" para comenzar.</div>';
+      return;
+    }
+
+    takesList.innerHTML = '';
+    takes.forEach((take, idx) => {
+      const chip = document.createElement('div');
+      chip.className = 'take-chip' + (idx === activeTakeIndex ? ' active' : '');
+      chip.innerHTML = `
+        <div class="take-info">
+          <span class="take-name">🎙️ ${take.name}</span>
+          <span class="take-meta">${formatTime(take.offset)} - ${formatTime(take.offset + take.duration)}</span>
+        </div>
+        <button class="take-delete" title="Eliminar toma" onclick="event.stopPropagation(); deleteTake(${idx});">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      `;
+      chip.addEventListener('click', () => {
+        setActiveTake(idx);
+        seekToTime(take.offset);
+      });
+      takesList.appendChild(chip);
+    });
+  }
+
+  window.deleteTake = function(idx) {
+    if (confirm(`¿Eliminar la ${takes[idx].name}?`)) {
+      takes.splice(idx, 1);
+      if (activeTakeIndex >= takes.length) {
+        activeTakeIndex = takes.length - 1;
+      }
+      currentAudioBuffer = activeTakeIndex >= 0 ? takes[activeTakeIndex].audioBuffer : null;
+      renderTakesList();
+      drawWaveform();
+      if (takes.length === 0) {
+        btnExportVideo.disabled = true;
+        btnExportAudio.disabled = true;
+      }
+    }
+  };
+
+  /* ==========================================================
+     SYNCHRONIZED VOICE AUDIO PLAYBACK
+     ========================================================== */
+  function playActiveVoiceTake(currentTime) {
+    stopActiveVoiceTake();
+    if (activeTakeIndex < 0 || !takes[activeTakeIndex]) return;
+
+    const take = takes[activeTakeIndex];
+    const takeStart = take.offset + (syncOffsetMs / 1000);
+    const takeEnd = takeStart + take.duration;
+
+    if (currentTime >= takeStart && currentTime < takeEnd) {
+      const offsetInTake = currentTime - takeStart;
+      activeAudioSource = audioCtx.createBufferSource();
+      activeAudioSource.buffer = take.audioBuffer;
+      activeAudioSource.connect(voiceTrackGainNode);
+      activeAudioSource.start(0, offsetInTake);
+
+      if (isDuckingEnabled && videoGainNode) {
+        videoGainNode.gain.setTargetAtTime(videoVolume * 0.25, audioCtx.currentTime, 0.05);
+      }
+    } else if (currentTime < takeStart) {
+      const delay = (takeStart - currentTime) / (video.playbackRate || 1);
+      activeAudioSource = audioCtx.createBufferSource();
+      activeAudioSource.buffer = take.audioBuffer;
+      activeAudioSource.connect(voiceTrackGainNode);
+      activeAudioSource.start(audioCtx.currentTime + delay, 0);
+
+      if (isDuckingEnabled && videoGainNode) {
+        setTimeout(() => {
+          if (isPlaying && videoGainNode) {
+            videoGainNode.gain.setTargetAtTime(videoVolume * 0.25, audioCtx.currentTime, 0.05);
+          }
+        }, delay * 1000);
+      }
+    }
+  }
+
+  function stopActiveVoiceTake() {
+    if (activeAudioSource) {
+      try {
+        activeAudioSource.stop();
+        activeAudioSource.disconnect();
+      } catch (e) {}
+      activeAudioSource = null;
+    }
+    if (videoGainNode) {
+      videoGainNode.gain.setTargetAtTime(isVideoMuted ? 0 : videoVolume, audioCtx.currentTime, 0.05);
+    }
+  }
+
+  /* ==========================================================
+     WAVEFORM RENDERING
+     ========================================================== */
+  function resizeWaveform() {
+    const rect = waveformWrapper.getBoundingClientRect();
+    waveformCanvas.width = rect.width * window.devicePixelRatio || 800;
+    waveformCanvas.height = rect.height * window.devicePixelRatio || 96;
+    drawWaveform();
+  }
+  window.addEventListener('resize', resizeWaveform);
+
+  function drawWaveform() {
+    const width = waveformCanvas.width;
+    const height = waveformCanvas.height;
+    waveCtx.clearRect(0, 0, width, height);
+
+    waveCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    waveCtx.lineWidth = 1;
+    waveCtx.beginPath();
+    waveCtx.moveTo(0, height / 2);
+    waveCtx.lineTo(width, height / 2);
+    waveCtx.stroke();
+
+    if (!currentAudioBuffer || !videoDuration) {
+      waveCtx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+      for (let x = 0; x < width; x += 6) {
+        const h = Math.sin(x * 0.05) * 12 + 14;
+        waveCtx.fillRect(x, (height - h) / 2, 3, h);
+      }
+      return;
+    }
+
+    const take = takes[activeTakeIndex];
+    const takeStartPct = (take.offset / videoDuration);
+    const takeWidthPct = (take.duration / videoDuration);
+
+    const startX = takeStartPct * width;
+    const blockWidth = takeWidthPct * width;
+
+    waveCtx.fillStyle = 'rgba(56, 189, 248, 0.08)';
+    waveCtx.fillRect(startX, 0, blockWidth, height);
+
+    const channelData = currentAudioBuffer.getChannelData(0);
+    const step = Math.ceil(channelData.length / blockWidth);
+    const amp = height / 2.2;
+
+    waveCtx.fillStyle = '#38bdf8';
+    for (let i = 0; i < blockWidth; i++) {
+      let min = 1.0;
+      let max = -1.0;
+      for (let j = 0; j < step; j++) {
+        const datum = channelData[(i * step) + j];
+        if (datum < min) min = datum;
+        if (datum > max) max = datum;
+      }
+      const barHeight = Math.max(3, (max - min) * amp);
+      const y = (height - barHeight) / 2;
+      waveCtx.fillRect(startX + i, y, 2, barHeight);
+    }
+  }
+
+  /* ==========================================================
+     MIXER & FX CONTROLS
+     ========================================================== */
+  sliderVideoVol.addEventListener('input', (e) => {
+    videoVolume = e.target.value / 100;
+    valVideoVol.textContent = e.target.value + '%';
+    if (videoGainNode && !isVideoMuted) {
+      videoGainNode.gain.setValueAtTime(videoVolume, audioCtx.currentTime);
+    }
+  });
+
+  checkMuteVideo.addEventListener('change', (e) => {
+    isVideoMuted = e.target.checked;
+    if (videoGainNode) {
+      videoGainNode.gain.setValueAtTime(isVideoMuted ? 0 : videoVolume, audioCtx.currentTime);
+    }
+  });
+
+  sliderVoiceVol.addEventListener('input', (e) => {
+    voiceVolume = e.target.value / 100;
+    valVoiceVol.textContent = e.target.value + '%';
+    if (voiceTrackGainNode) {
+      voiceTrackGainNode.gain.setValueAtTime(voiceVolume, audioCtx.currentTime);
+    }
+  });
+
+  checkDucking.addEventListener('change', (e) => {
+    isDuckingEnabled = e.target.checked;
+  });
+
+  sliderSyncOffset.addEventListener('input', (e) => {
+    syncOffsetMs = parseInt(e.target.value, 10);
+    valSyncOffset.textContent = (syncOffsetMs > 0 ? '+' : '') + syncOffsetMs + ' ms';
+  });
+
+  checkMicMonitor.addEventListener('change', (e) => {
+    if (monitorGainNode) {
+      monitorGainNode.gain.setValueAtTime(e.target.checked ? 1.0 : 0.0, audioCtx.currentTime);
+    }
+  });
+
+  micSelect.addEventListener('change', (e) => {
+    connectMicrophone(e.target.value);
+  });
+
+  // Presets
+  const presetButtons = document.querySelectorAll('.btn-preset');
+  presetButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      presetButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyPreset(btn.dataset.preset);
+    });
+  });
+
+  function applyPreset(preset) {
+    if (!eqFilterNode) return;
+    activePreset = preset;
+    if (preset === 'clarity') {
+      eqFilterNode.type = 'highshelf';
+      eqFilterNode.frequency.setValueAtTime(3200, audioCtx.currentTime);
+      eqFilterNode.gain.setValueAtTime(4.5, audioCtx.currentTime);
+    } else if (preset === 'radio') {
+      eqFilterNode.type = 'peaking';
+      eqFilterNode.frequency.setValueAtTime(160, audioCtx.currentTime);
+      eqFilterNode.gain.setValueAtTime(5.0, audioCtx.currentTime);
+      eqFilterNode.Q.setValueAtTime(1.0, audioCtx.currentTime);
+    } else if (preset === 'podcast') {
+      eqFilterNode.type = 'peaking';
+      eqFilterNode.frequency.setValueAtTime(2400, audioCtx.currentTime);
+      eqFilterNode.gain.setValueAtTime(3.0, audioCtx.currentTime);
+      eqFilterNode.Q.setValueAtTime(0.8, audioCtx.currentTime);
+    } else {
+      eqFilterNode.type = 'allpass';
+    }
+  }
+
+  /* ==========================================================
+     TELEPROMPTER FONT SIZE CONTROLS
+     ========================================================== */
+  let teleprompterFontSize = 16;
+  btnFontSizeUp.addEventListener('click', () => {
+    teleprompterFontSize = Math.min(32, teleprompterFontSize + 2);
+    teleprompterText.style.fontSize = teleprompterFontSize + 'px';
+  });
+  btnFontSizeDown.addEventListener('click', () => {
+    teleprompterFontSize = Math.max(12, teleprompterFontSize - 2);
+    teleprompterText.style.fontSize = teleprompterFontSize + 'px';
+  });
+
+  /* ==========================================================
+     EXPORT ENGINE (VIDEO MEZCLADO & AUDIO INDIVIDUAL)
+     ========================================================== */
+
+  // 1. Export Audio Track (WAV)
+  btnExportAudio.addEventListener('click', async () => {
+    if (activeTakeIndex < 0 || !takes[activeTakeIndex]) return;
+    const take = takes[activeTakeIndex];
+    
+    exportOverlay.classList.add('active');
+    exportTitle.textContent = "Preparando Descarga de Audio...";
+    exportDesc.textContent = "Generando archivo de audio WAV en alta definición.";
+    exportBarFill.style.width = "100%";
+    exportPercent.textContent = "100%";
+
+    const wavBlob = audioBufferToWav(take.audioBuffer);
+    const downloadUrl = URL.createObjectURL(wavBlob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = `VozEnOff_${take.name.replace(/\s+/g, '_')}.wav`;
+    a.click();
+
+    setTimeout(() => {
+      exportOverlay.classList.remove('active');
+    }, 900);
+  });
+
+  function audioBufferToWav(buffer) {
+    const numOfChan = buffer.numberOfChannels;
+    const length = buffer.length * numOfChan * 2 + 44;
+    const out = new DataView(new ArrayBuffer(length));
+    const channels = [];
+    let sampleRate = buffer.sampleRate;
+    let offset = 0;
+    let pos = 0;
+
+    function setUint16(data) { out.setUint16(pos, data, true); pos += 2; }
+    function setUint32(data) { out.setUint32(pos, data, true); pos += 4; }
+
+    setUint32(0x46464952); // "RIFF"
+    setUint32(length - 8);
+    setUint32(0x45564157); // "WAVE"
+    setUint32(0x20746d66); // "fmt "
+    setUint32(16);
+    setUint16(1); // PCM
+    setUint16(numOfChan);
+    setUint32(sampleRate);
+    setUint32(sampleRate * 2 * numOfChan);
+    setUint16(numOfChan * 2);
+    setUint16(16);
+    setUint32(0x61746164); // "data"
+    setUint32(length - pos - 4);
+
+    for (let i = 0; i < numOfChan; i++) {
+      channels.push(buffer.getChannelData(i));
+    }
+
+    while (offset < buffer.length) {
+      for (let i = 0; i < numOfChan; i++) {
+        let sample = Math.max(-1, Math.min(1, channels[i][offset]));
+        sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+        out.setInt16(pos, sample, true);
+        pos += 2;
+      }
+      offset++;
+    }
+
+    return new Blob([out], { type: 'audio/wav' });
+  }
+
+  // 2. Export Mixed Video (Canvas + Web Audio MediaStreamDestination)
+  btnExportVideo.addEventListener('click', async () => {
+    if (!video || !videoDuration) return;
+    
+    exportOverlay.classList.add('active');
+    exportTitle.textContent = "Mezclando Video y Voz en Off...";
+    exportDesc.textContent = "Renderizando cuadro por cuadro con el balance de audio ajustado.";
+    exportBarFill.style.width = "0%";
+    exportPercent.textContent = "0%";
+
+    pauseVideoAndAudio();
+    seekToTime(0);
+
+    try {
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = video.videoWidth || 1280;
+      exportCanvas.height = video.videoHeight || 720;
+      const ctx = exportCanvas.getContext('2d');
+
+      const canvasStream = exportCanvas.captureStream(30);
+      const mixedDest = audioCtx.createMediaStreamDestination();
+
+      if (videoGainNode) videoGainNode.connect(mixedDest);
+      if (compressorNode) compressorNode.connect(mixedDest);
+
+      const combinedStream = new MediaStream([
+        ...canvasStream.getVideoTracks(),
+        ...mixedDest.stream.getAudioTracks()
+      ]);
+
+      const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+        ? 'video/webm;codecs=vp9,opus'
+        : 'video/webm';
+
+      const exportRecorder = new MediaRecorder(combinedStream, { mimeType: mime });
+      const exportChunks = [];
+
+      exportRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) exportChunks.push(e.data);
+      };
+
+      exportRecorder.onstop = () => {
+        const finalBlob = new Blob(exportChunks, { type: 'video/webm' });
+        const downloadUrl = URL.createObjectURL(finalBlob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `Video_VozEnOff_${Date.now()}.webm`;
+        a.click();
+
+        exportTitle.textContent = "¡Video Exportado con Éxito!";
+        exportDesc.textContent = "La descarga comenzará automáticamente.";
+        exportBarFill.style.width = "100%";
+        exportPercent.textContent = "100%";
+
+        try {
+          if (videoGainNode) videoGainNode.disconnect(mixedDest);
+          if (compressorNode) compressorNode.disconnect(mixedDest);
+        } catch (e) {}
+
+        setTimeout(() => {
+          exportOverlay.classList.remove('active');
+        }, 1200);
+      };
+
+      exportRecorder.start(100);
+
+      playVideoAndAudio();
+
+      function streamLoop() {
+        if (!video.ended && !video.paused) {
+          ctx.drawImage(video, 0, 0, exportCanvas.width, exportCanvas.height);
+          const pct = Math.round((video.currentTime / videoDuration) * 100);
+          exportBarFill.style.width = pct + '%';
+          exportPercent.textContent = pct + '%';
+          requestAnimationFrame(streamLoop);
+        } else {
+          exportRecorder.stop();
+          pauseVideoAndAudio();
+        }
+      }
+      requestAnimationFrame(streamLoop);
+
+    } catch (err) {
+      console.error("Export error:", err);
+      alert("Error al exportar el video: " + err.message);
+      exportOverlay.classList.remove('active');
+    }
+  });
+
+  /* ==========================================================
+     HELP MODAL & KEYBOARD SHORTCUTS
+     ========================================================== */
+  btnOpenHelp.addEventListener('click', () => helpModal.classList.add('open'));
+  btnCloseHelp.addEventListener('click', () => helpModal.classList.remove('open'));
+  helpModal.addEventListener('click', (e) => {
+    if (e.target === helpModal) helpModal.classList.remove('open');
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+    if (e.code === 'Space') {
+      e.preventDefault();
+      togglePlayPause();
+    } else if (e.code === 'KeyR') {
+      e.preventDefault();
+      btnRecordMain.click();
+    } else if (e.code === 'KeyP') {
+      e.preventDefault();
+      btnPunchIn.click();
+    } else if (e.code === 'ArrowLeft') {
+      e.preventDefault();
+      btnSkipBack.click();
+    } else if (e.code === 'ArrowRight') {
+      e.preventDefault();
+      btnSkipForward.click();
+    } else if (e.code === 'KeyM') {
+      e.preventDefault();
+      checkMuteVideo.click();
+    } else if (e.code === 'Escape') {
+      if (helpModal.classList.contains('open')) {
+        helpModal.classList.remove('open');
+      }
+    }
+  });
+
+  function formatTime(sec) {
+    if (isNaN(sec) || sec < 0) return '00:00.0';
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    const ds = Math.floor((sec % 1) * 10);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ds}`;
+  }
+</script>
+
+</body>
+</html>

@@ -409,6 +409,46 @@
       color: #fff;
     }
 
+    .nav-link.highlight-voice {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+
+    .nav-link.highlight-voice:hover {
+      background: rgba(239, 68, 68, 0.28);
+      border-color: rgba(239, 68, 68, 0.6);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.3);
+    }
+
+    .creator-banner.voice-banner {
+      background: linear-gradient(135deg, rgba(30, 15, 25, 0.85) 0%, rgba(20, 24, 45, 0.8) 100%);
+      border-color: rgba(239, 68, 68, 0.3);
+      box-shadow: 0 12px 36px rgba(239, 68, 68, 0.12);
+    }
+
+    .creator-banner.voice-banner::before {
+      background: linear-gradient(90deg, #ef4444, #f43f5e, #8b5cf6);
+    }
+
+    .btn-voice-action {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 14px 24px; border-radius: 14px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #ffffff; font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.92rem; font-weight: 800; text-decoration: none;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+      transition: all 0.22s ease;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    .btn-voice-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(239, 68, 68, 0.65);
+      background: linear-gradient(135deg, #f87171, #ef4444);
+    }
+
     /* === CREATOR BANNER === */
     .creator-banner {
       margin-top: 48px;
@@ -494,15 +534,21 @@
   <div class="top-nav-inner">
     <a href="index.html" class="nav-brand">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 18V5l12-2v13"></path>
-        <circle cx="6" cy="18" r="3"></circle>
-        <circle cx="18" cy="16" r="3"></circle>
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
       </svg>
-      Escucha Activa
+      Creador de Contenido
     </a>
     <div class="nav-links">
       <a href="../PaginaParaAprendeIngles/index.html" class="nav-link">Plataforma Quizzes</a>
       <a href="player.html" class="nav-link">Reproductor</a>
+      <a href="voz-en-off.html" class="nav-link highlight-voice">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" x2="12" y1="19" y2="22"/>
+        </svg>
+        Voz en Off
+      </a>
       <a href="crear-lrc.html" class="nav-link highlight">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"></circle>
@@ -519,23 +565,23 @@
 <section class="hero">
   <div class="hero-img"></div>
   <div class="hero-content">
-    <div class="hero-tag">Escucha Activa · Active Listening</div>
-    <h1 class="hero-title">Entrena tu oído<br><span>con música real</span></h1>
+    <div class="hero-tag">Suite Creativa · Creación & Voz en Off</div>
+    <h1 class="hero-title">Estudio de Creación<br><span>de Contenido & Audios</span></h1>
     <p class="hero-desc">
-      Frase por frase, a ciegas. El método más efectivo para desarrollar comprensión auditiva real en inglés.
+      Graba voz en off sincronizada con tus videos, nivela volúmenes con auto-ducking profesional y sincroniza canciones para escucha activa.
     </p>
     <div class="hero-stats">
       <div class="hero-stat">
-        <div class="hero-stat-num">2</div>
-        <div class="hero-stat-lbl">Canciones activas</div>
+        <div class="hero-stat-num">Voz en Off</div>
+        <div class="hero-stat-lbl">Video Studio</div>
       </div>
       <div class="hero-stat">
-        <div class="hero-stat-num">Frase a frase</div>
-        <div class="hero-stat-lbl">Metodología</div>
+        <div class="hero-stat-num">Auto-Ducking</div>
+        <div class="hero-stat-lbl">Mezcla Automática</div>
       </div>
       <div class="hero-stat">
-        <div class="hero-stat-num">B1 — B2</div>
-        <div class="hero-stat-lbl">Nivel CEFR</div>
+        <div class="hero-stat-num">LRC Maker</div>
+        <div class="hero-stat-lbl">Sincronizador</div>
       </div>
     </div>
   </div>
@@ -544,8 +590,29 @@
 <!-- MAIN -->
 <div class="main">
 
+  <!-- VOICE-OVER STUDIO BANNER -->
+  <div class="creator-banner voice-banner" style="margin-top: 30px; margin-bottom: 20px;">
+    <div class="creator-banner-body">
+      <div class="creator-banner-tag" style="color: #f87171; background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.25);">
+        🎙️ Nueva Super Herramienta
+      </div>
+      <h3 class="creator-banner-title">Crear Videos con Voz en Off Profesional</h3>
+      <p class="creator-banner-desc">
+        Sube cualquier video, graba tu voz en off mientras se reproduce con cuenta regresiva, nivela los volúmenes con <strong>Auto-Ducking inteligente</strong>, gestiona múltiples tomas (Takes & Punch-In), lee tu guion con el <strong>teleprompter integrado</strong> y exporta el video final mezclado listo para publicar.
+      </p>
+    </div>
+    <a href="voz-en-off.html" class="btn-voice-action">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="22"/>
+      </svg>
+      Abrir Estudio de Voz en Off
+    </a>
+  </div>
+
   <div class="section-header">
-    <h2 class="section-title">Canciones Disponibles</h2>
+    <h2 class="section-title">Canciones de Escucha Activa</h2>
     <div class="section-line"></div>
   </div>
 
@@ -601,10 +668,12 @@
 </div>
 
 <footer>
-  <p>Aprende Inglés con Música — Micha &copy; 2026</p>
+  <p>Creador de Contenido & Escucha Activa — Micha &copy; 2026</p>
   <p style="margin-top:5px;">
-    ¿Quieres sincronizar tu propia canción?
-    <a href="crear-lrc.html">Abre el Estudio Creador de LRC</a> · <a href="player.html">Reproductor manual</a>
+    Herramientas del Creador:
+    <a href="voz-en-off.html" style="color: #fca5a5; font-weight: 700;">🎙️ Estudio de Voz en Off</a> ·
+    <a href="crear-lrc.html">Creador de LRC</a> ·
+    <a href="player.html">Reproductor Escucha Activa</a>
   </p>
 </footer>
 

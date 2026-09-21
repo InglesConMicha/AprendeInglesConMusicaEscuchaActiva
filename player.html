@@ -634,6 +634,7 @@
     <div class="toolbar-left">
       <button class="btn btn-toggle" id="btn-toggle-config" onclick="toggleConfigPanel()">⚙️ Configuración</button>
       <a href="index.html" class="btn" style="text-decoration: none;">🏠 Volver al Menú</a>
+      <a href="voz-en-off.html" class="btn" style="text-decoration: none; color: #fca5a5; border-color: rgba(239,68,68,0.35);">🎙️ Voz en Off</a>
       <a href="crear-lrc.html" class="btn" style="text-decoration: none; color: #38bdf8; border-color: rgba(56,189,248,0.3);">✨ Crear LRC</a>
       <button class="btn btn-toggle btn-webcam" id="btn-toggle-webcam" onclick="toggleWebcam()">📷 Activar Cámara</button>
       <button class="btn btn-toggle" id="btn-toggle-fullscreen" onclick="toggleFullscreen()">📺 Pantalla Completa</button>
@@ -825,10 +826,21 @@
     }
   });
 
-  // Manejador de letras LRC (Guarda logs)
+  // Manejador de letras LRC (Carga directa para práctica o sincronización)
   document.getElementById('lyrics-lrc-input').addEventListener('change', (e) => {
     const file = e.target.files[0];
-    if (file) console.log("Letras de sincronización general cargadas.");
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        slidesData = parseLRC(evt.target.result);
+        currentIndex = -1;
+        isRevealed = false;
+        slideDisplay.innerHTML = `<span style="color:#38bdf8; font-size:1.2rem; font-weight:600;">¡Letra LRC sincronizada cargada con éxito! 🎶</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">Oculta la configuración y pulsa <b>▶️ Siguiente</b> o presiona la barra <b>Espaciadora</b> para empezar.</span>`;
+        updateCounter();
+        checkAutocloseConfig();
+      };
+      reader.readAsText(file);
+    }
   });
 
   // Carga e inicialización de Diapositivas LRC
@@ -894,15 +906,13 @@
 
     data.sort((a, b) => a.time - b.time);
 
-    // Si no tiene endTime explícito, calcularlo en base a la siguiente frase
+    // Si no tiene endTime explícito, calcularlo exactamente con el inicio de la siguiente frase
     for (let i = 0; i < data.length; i++) {
       if (!data[i].endTime) {
         if (i < data.length - 1) {
-          const gap = data[i + 1].time - data[i].time;
-          // Si el espacio es mayor a 6s (puente o silencio instrumental), limitar la duración máxima a 4.5s
-          data[i].endTime = (gap > 6.0) ? (data[i].time + 4.5) : data[i + 1].time;
+          data[i].endTime = data[i + 1].time;
         } else {
-          data[i].endTime = data[i].time + 4.5;
+          data[i].endTime = (audio && audio.duration && !isNaN(audio.duration)) ? audio.duration : data[i].time + 4.0;
         }
       }
     }
@@ -910,13 +920,16 @@
     return data;
   }
 
-  // Monitor continuo de alta precisión (60fps) para detener el snippet exactamente a tiempo
+  // Monitor continuo de alta precisión (60fps) para detener el snippet exactamente donde indica el LRC
   let playbackFrameId = null;
 
   function monitorSnippetPlayback() {
     if (stopTime !== null && isPracticeMode) {
       if (audio.currentTime >= stopTime || audio.paused) {
         audio.pause();
+        if (audio.currentTime > stopTime) {
+          audio.currentTime = stopTime;
+        }
         stopTime = null;
         isPracticeMode = false;
         if (playbackFrameId) cancelAnimationFrame(playbackFrameId);
@@ -926,12 +939,15 @@
     }
   }
 
-  // Evento timeupdate como respaldo
+  // Evento timeupdate como respaldo de sincronización exacta
   audio.addEventListener('timeupdate', () => {
     if (slidesData.length === 0) return;
     const currentTime = audio.currentTime;
-    if (stopTime !== null && currentTime >= stopTime) {
+    if (stopTime !== null && isPracticeMode && currentTime >= stopTime) {
       audio.pause();
+      if (audio.currentTime > stopTime) {
+        audio.currentTime = stopTime;
+      }
       stopTime = null;
       isPracticeMode = false;
     }
@@ -972,16 +988,18 @@
     `;
   }
 
-  // Reproduce la sección de audio correspondiente a la frase actual sin silencios ni cortes
+  // Reproduce la sección de audio correspondiente a la frase actual exactamente según el LRC
   function playCurrentSnippet() {
     if (slidesData.length === 0 || currentIndex < 0) return;
 
     isPracticeMode = true;
     const currentSlide = slidesData[currentIndex];
-    const startTime = Math.max(0, currentSlide.time - 0.05); // Margen mínimo al inicio para no cortar la primera consonante
+    const startTime = currentSlide.time; // Tiempo exacto donde inicia según el LRC
     
-    // Margen de 0.08s al final para que la última vocal o consonante suene natural y completa
-    const targetEnd = (currentSlide.endTime ? currentSlide.endTime : (currentIndex < slidesData.length - 1 ? slidesData[currentIndex + 1].time : (audio.duration || startTime + 4))) + 0.08;
+    // Tiempo exacto de detención según el LRC
+    const targetEnd = (currentSlide.endTime !== null && currentSlide.endTime !== undefined)
+      ? currentSlide.endTime 
+      : (currentIndex < slidesData.length - 1 ? slidesData[currentIndex + 1].time : (audio.duration || startTime + 4));
 
     stopTime = targetEnd;
     audio.currentTime = startTime;
