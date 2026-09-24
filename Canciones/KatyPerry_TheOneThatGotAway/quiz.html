@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Interactivo — The One That Got Away (Katy Perry) 🎵</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Favicon SVG Musical -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'%3E%3C/path%3E%3Ccircle cx='6' cy='18' r='3' fill='%23f59e0b'%3E%3C/circle%3E%3Ccircle cx='18' cy='16' r='3' fill='%23f59e0b'%3E%3C/circle%3E%3C/svg%3E">
+
+  <style>
+    :root {
+      --bg-color: #0b0c16;
+      --bg-gradient: linear-gradient(135deg, #090914 0%, #170d28 45%, #2e1026 100%);
+      --card-bg: rgba(26, 18, 38, 0.78);
+      --card-border: rgba(245, 158, 11, 0.16);
+      --accent-primary: #f59e0b; /* Sunset Amber */
+      --accent-secondary: #f43f5e; /* Rose */
+      --accent-cyan: #38bdf8;
+      --accent-success: #4ade80;
+      --accent-error: #f87171;
+      --accent-warning: #fde047;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: all 0.22s ease;
+    }
+
+    body {
+      font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      background: var(--bg-color);
+      background-image: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Glow Spots */
+    .glow-spot {
+      position: fixed;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(120px);
+      opacity: 0.18;
+      z-index: 0;
+    }
+    .glow-1 { top: -100px; left: -100px; background: #f59e0b; }
+    .glow-2 { bottom: -100px; right: -100px; background: #f43f5e; }
+
+    .app-container {
+      width: 100%;
+      max-width: 680px;
+      background: var(--card-bg);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(245, 158, 11, 0.08);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Song Header Badge */
+    .song-badge {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .song-thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .song-info h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .song-info p {
+      font-size: 0.85rem;
+      color: var(--accent-primary);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .streak-badge, .xp-badge {
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .streak-badge {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fde68a;
+    }
+
+    .xp-badge {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      color: #fda4af;
+    }
+
+    /* Progress */
+    .progress-wrapper {
+      margin-bottom: 24px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .progress-bg {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f59e0b, #f43f5e);
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+
+    /* Question Box */
+    .category-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-primary);
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      padding: 4px 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .question-title {
+      font-size: 1.22rem;
+      font-weight: 700;
+      line-height: 1.45;
+      margin-bottom: 14px;
+      color: #f8fafc;
+    }
+
+    .context-box {
+      background: rgba(0, 0, 0, 0.32);
+      border-left: 3px solid var(--accent-primary);
+      padding: 12px 16px;
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 20px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.92rem;
+      color: #fed7aa;
+      line-height: 1.4;
+    }
+
+    /* Options */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .option-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 14px;
+      padding: 14px 18px;
+      color: var(--text-main);
+      font-size: 0.98rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-family: inherit;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.35);
+      transform: translateX(4px);
+    }
+
+    .option-letter {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-primary);
+      flex-shrink: 0;
+    }
+
+    .option-btn.correct {
+      background: rgba(74, 222, 128, 0.18) !important;
+      border-color: var(--accent-success) !important;
+      color: #86efac !important;
+    }
+
+    .option-btn.correct .option-letter {
+      background: var(--accent-success);
+      color: #052e16;
+    }
+
+    .option-btn.incorrect {
+      background: rgba(248, 113, 113, 0.18) !important;
+      border-color: var(--accent-error) !important;
+      color: #fca5a5 !important;
+    }
+
+    .option-btn.incorrect .option-letter {
+      background: var(--accent-error);
+      color: #450a0a;
+    }
+
+    /* Feedback Box */
+    .feedback-box {
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 0.94rem;
+      line-height: 1.5;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .feedback-box.correct {
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      color: #86efac;
+      display: block;
+    }
+
+    .feedback-box.incorrect {
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: #fca5a5;
+      display: block;
+    }
+
+    /* Footer Buttons */
+    .footer-actions {
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-next {
+      background: linear-gradient(135deg, #f59e0b, #f43f5e);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-next:hover:not(:disabled) {
+      background: linear-gradient(135deg, #fbbf24, #fb7185);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+    }
+
+    .btn-next:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-listen-shortcut {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #7dd3fc;
+      padding: 10px 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-listen-shortcut:hover {
+      background: rgba(56, 189, 248, 0.22);
+    }
+
+    .btn-back {
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-back:hover {
+      color: #fff;
+    }
+
+    /* Results Screen */
+    .results-container {
+      text-align: center;
+      padding: 20px 0;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .results-trophy {
+      font-size: 4rem;
+      margin-bottom: 12px;
+      display: inline-block;
+      animation: pulse 1.8s infinite;
+    }
+
+    .results-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .results-subtitle {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .results-score-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .score-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .score-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--accent-primary);
+      margin-bottom: 4px;
+    }
+
+    .score-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .results-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="glow-spot glow-1"></div>
+<div class="glow-spot glow-2"></div>
+
+<div class="app-container">
+
+  <!-- Song Header -->
+  <div class="song-badge">
+    <img src="cover.svg" alt="The One That Got Away" class="song-thumb" onerror="this.src='../../Canciones/KatyPerry_TheOneThatGotAway/cover.svg'">
+    <div class="song-info">
+      <h1>The One That Got Away 🎵</h1>
+      <p>Katy Perry · Nivel Intermedio (15 preguntas)</p>
+    </div>
+  </div>
+  
+  <!-- Status Bar (XP / Racha) -->
+  <div class="status-bar">
+    <div class="streak-badge" id="streak-badge">
+      🔥 <span id="streak-count">0</span> Racha
+    </div>
+    <div class="xp-badge" id="xp-badge">
+      ⭐ <span id="xp-count">0</span> XP
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="progress-wrapper">
+    <div class="progress-header">
+      <span id="progress-text">Pregunta 1 de 15</span>
+      <span id="progress-percent">7%</span>
+    </div>
+    <div class="progress-bg">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- Quiz Dynamic Area -->
+  <div id="quiz-area"></div>
+
+  <!-- Footer Actions -->
+  <div class="footer-actions">
+    <a href="../../player.html?song=KatyPerry_TheOneThatGotAway" class="btn-listen-shortcut">🎧 Escucha Activa</a>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()" disabled>Continuar ➔</button>
+  </div>
+
+</div>
+
+<script>
+  // Web Audio Context for immediate sounds
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioCtx = null;
+
+  function playSound(type) {
+    try {
+      if (!audioCtx) audioCtx = new AudioCtx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'correct') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+        osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } else {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(174.61, audioCtx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      }
+    } catch (e) {
+      // Audio not permitted or supported
+    }
+  }
+
+  const questions = [
+    {
+      category: 'Modismos · Idioms',
+      question: '¿Qué significa la expresión central "The one that got away" en inglés?',
+      context: '"So I don\'t have to say you were the one that got away"',
+      options: [
+        'Una persona que se fue de vacaciones sin avisar',
+        'El amor que dejaste escapar / la persona indicada con la que no pudiste quedarte',
+        'Un fugitivo que logró escapar de la policía',
+        'Un boleto de tren que se perdió en la estación'
+      ],
+      correctIndex: 1,
+      explanation: '<b>"The one that got away"</b> proviene de historias de pesca ("el gran pez que se me escapó"), pero en el amor se utiliza para definir a esa persona especial del pasado con la que sientes que debiste haberte quedado para siempre.'
+    },
+    {
+      category: 'Phrasal Verbs',
+      question: '¿Qué significa el phrasal verb "Make out" en este verso?',
+      context: '"We\'d make out in your Mustang to Radiohead"',
+      options: [
+        'Discutir acaloradamente por música',
+        'Besarse y acariciarse apasionadamente',
+        'Estudiar para un examen de conducir',
+        'Acelerar el coche a toda velocidad'
+      ],
+      correctIndex: 1,
+      explanation: 'En inglés estadounidense, <b>"make out"</b> significa besarse apasionadamente. Es uno de los phrasal verbs más comunes en música pop y cine romántico.'
+    },
+    {
+      category: 'Gramática · Hábitos Pasados',
+      question: 'En "We\'d make out in your Mustang", ¿qué representa la contracción "We\'d"?',
+      context: '"We\'d make out in your Mustang to Radiohead"',
+      options: [
+        'We had (Pasado perfecto)',
+        'We would (Acciones habituales o repetidas en el pasado)',
+        'We did (Énfasis de pasado)',
+        'We should (Deberíamos habernos besado)'
+      ],
+      correctIndex: 1,
+      explanation: 'El modal <b>"would"</b> se usa comúnmente en narraciones para describir hábitos pasados ("Nos besábamos / Solíamos besarnos"), con un significado equivalente a <i>used to</i>.'
+    },
+    {
+      category: 'Gramática · Used to',
+      question: '¿Qué función cumple la estructura "Used to" en este verso?',
+      context: '"Used to steal your parents\' liquor and climb to the roof"',
+      options: [
+        'Indica que todavía siguen haciéndolo en el presente',
+        'Indica un hábito o costumbre del pasado que ya NO ocurre en el presente',
+        'Significa usar herramientas para abrir botellas',
+        'Indica una promesa para el próximo verano'
+      ],
+      correctIndex: 1,
+      explanation: '<b>"Used to + verbo base"</b> se usa exclusivamente para acciones habituales o estados del pasado que ya finalizaron o cambiaron en el presente ("Solíamos robar...").'
+    },
+    {
+      category: 'Pronunciación · Silent Letters',
+      question: '¿Qué letra es SILENCIOSA en la palabra "climb" (/klaɪm/)?',
+      context: '"Used to steal your parents\' liquor and climb to the roof"',
+      options: [
+        'La letra "C"',
+        'La letra "L"',
+        'La letra "B"',
+        'La letra "M"'
+      ],
+      correctIndex: 2,
+      explanation: 'En las combinaciones finales <b>"-mb"</b> en inglés, la <b>B</b> es muda: <i>climb</i> (/klaɪm/), <i>tomb</i> (/tuːm/), <i>comb</i> (/koʊm/), <i>thumb</i> (/θʌm/).'
+    },
+    {
+      category: 'Modismos · Idioms',
+      question: '¿Qué significa la expresión irónica "Like we had a clue"?',
+      context: '"Talk about our future like we had a clue"',
+      options: [
+        'Como si tuviéramos un mapa secreto',
+        'Como si supiéramos lo que hacíamos / como si tuviéramos idea del futuro',
+        'Como si tuviéramos mucho dinero ahorrado',
+        'Como si sospecháramos de un crimen'
+      ],
+      correctIndex: 1,
+      explanation: '<b>"Have a clue"</b> significa tener noción o entender una situación. Con ironía retrospectiva, <i>"like we had a clue"</i> resalta que eran jóvenes e ingenuos y en realidad no sabían nada de la vida.'
+    },
+    {
+      category: 'Condicionales · Second Conditional',
+      question: '¿Qué expresa "In another life, I would be your girl"?',
+      context: '"In another life, I would be your girl / We\'d keep all our promises"',
+      options: [
+        'Un plan garantizado para la próxima semana',
+        'Un escenario hipotético e irreal que no es posible en la vida actual',
+        'Una orden formal hacia su expareja',
+        'Una duda de si reencarnará pronto'
+      ],
+      correctIndex: 1,
+      explanation: 'Es un condicional hipotético. Usa <b>"would + verbo base"</b> para soñar con una realidad paralela alternativa donde su amor sí prosperó.'
+    },
+    {
+      category: 'Gramática · Causativas',
+      question: '¿Qué regla gramatical sigue la frase "I would make you stay"?',
+      context: '"In another life, I would make you stay"',
+      options: [
+        'Make + objeto + verbo en FORMA BASE sin "to"',
+        'Make + to + infinitivo con "to"',
+        'Make + verbo con terminación -ing',
+        'Make + participio pasado irregular'
+      ],
+      correctIndex: 0,
+      explanation: 'Los verbos causativos como <b>MAKE</b> o <b>LET</b> van seguidos del objeto y del verbo principal en forma base (sin "to"): <i>"Make you stay"</i>, <i>"Make me smile"</i>.'
+    },
+    {
+      category: 'Cultura & Música',
+      question: '¿A qué hace referencia "I was June, and you were my Johnny Cash"?',
+      context: '"I was June, and you were my Johnny Cash / Never one without the other, we made a pact"',
+      options: [
+        'Al mes de junio y a pagar en billetes de dólar',
+        'A June Carter y Johnny Cash, una de las parejas de amor más icónicas de la música',
+        'A personajes de una película de vaqueros del viejo oeste',
+        'A dos guitarristas de una banda de rock pesado'
+      ],
+      correctIndex: 1,
+      explanation: 'Johnny Cash y June Carter Cash representaron un amor legendario, devoto e inseparable en la historia de la música popular estadounidense.'
+    },
+    {
+      category: 'Modismos · Idioms',
+      question: '¿Qué significa la expresión idiomática "Singing the blues"?',
+      context: '"Someone said you had your tattoo removed / Saw you downtown singing the blues"',
+      options: [
+        'Estar cantando en una fiesta de gala',
+        'Estar triste, deprimido o lamentándose por una pena de amor',
+        'Tener las cuerdas vocales pintadas de azul',
+        'Grabar un disco en un estudio profesional'
+      ],
+      correctIndex: 1,
+      explanation: '<b>"Sing the blues"</b> significa lamentarse o estar atravesando un estado de profunda tristeza y desilusión afectiva.'
+    },
+    {
+      category: 'Modismos · Idioms',
+      question: '¿Qué significa la frase "It\'s time to face the music"?',
+      context: '"It\'s time to face the music, I\'m no longer your muse"',
+      options: [
+        'Es hora de encender el altavoz a todo volumen',
+        'Es hora de afrontar la dura realidad y asumir las consecuencias',
+        'Es hora de ir a clases de piano',
+        'Es momento de bailar frente al escenario'
+      ],
+      correctIndex: 1,
+      explanation: '<b>"Face the music"</b> es un modismo esencial que significa aceptar con valentía la realidad o las consecuencias inevitables de una situación dolorosa.'
+    },
+    {
+      category: 'Vocabulario',
+      question: '¿Qué significa "muse" en el verso "I\'m no longer your muse"?',
+      context: '"It\'s time to face the music, I\'m no longer your muse"',
+      options: [
+        'Música de fondo',
+        'Musa de inspiración artística',
+        'Enemiga mortal',
+        'Dueña del coche'
+      ],
+      correctIndex: 1,
+      explanation: '<b>"Muse"</b> (musa) es la fuente de inspiración para un artista (en el videoclip de la canción, su pareja es un pintor que dibuja su retrato continuamente).'
+    },
+    {
+      category: 'Gramática · Modal Verbs',
+      question: '¿Qué expresa "I should\'ve told you what you meant to me"?',
+      context: '"I should\'ve told you what you meant to me, whoa / \'Cause now I pay the price"',
+      options: [
+        'Una obligación presente que tiene hoy',
+        'Arrepentimiento por algo que debió haber hecho en el pasado pero no hizo',
+        'Una felicitación por haber expresado sus sentimientos a tiempo',
+        'Una recomendación para el futuro'
+      ],
+      correctIndex: 1,
+      explanation: '<b>"Should have + Participio"</b> (abreviado en el habla como <i>should\'ve</i> /ʃʊdəv/) expresa arrepentimiento o reproche retrospectivo: "Debí haberte dicho...".'
+    },
+    {
+      category: 'Modismos · Idioms',
+      question: '¿Qué significa el modismo "Pay the price"?',
+      context: '"\'Cause now I pay the price / In another life, I would be your girl"',
+      options: [
+        'Pagar una cuenta bancaria con intereses',
+        'Sufrir el alto costo emocional o las consecuencias negativas de tus errores',
+        'Comprar un anillo de diamantes costoso',
+        'Reclamar un descuento en la tienda'
+      ],
+      correctIndex: 1,
+      explanation: 'En sentido figurado, <b>"pay the price"</b> significa asumir las consecuencias amargas o el sufrimiento derivado de malas decisiones del pasado.'
+    },
+    {
+      category: 'Collocations & Expresiones',
+      question: '¿Qué significa la frase "Keep all our promises"?',
+      context: '"We\'d keep all our promises / Be us against the world"',
+      options: [
+        'Romper o traicionar las promesas',
+        'Cumplir y respetar todas nuestras promesas',
+        'Escribir secretos en un diario personal',
+        'Inventar mentiras piadosas'
+      ],
+      correctIndex: 1,
+      explanation: 'La colocación natural en inglés para "cumplir una promesa" es <b>"keep a promise"</b> (lo contrario es <i>break a promise</i>).'
+    }
+  ];
+
+  let currentIdx = 0;
+  let score = 0;
+  let streak = 0;
+  let xp = 0;
+  let answered = false;
+
+  function renderQuestion() {
+    answered = false;
+    document.getElementById('btn-next').disabled = true;
+
+    const q = questions[currentIdx];
+    const total = questions.length;
+    const progress = Math.round(((currentIdx + 1) / total) * 100);
+
+    document.getElementById('progress-text').innerText = `Pregunta ${currentIdx + 1} de ${total}`;
+    document.getElementById('progress-percent').innerText = `${progress}%`;
+    document.getElementById('progress-fill').style.width = `${progress}%`;
+
+    const letters = ['A', 'B', 'C', 'D'];
+    const optionsHtml = q.options.map((opt, i) => `
+      <button class="option-btn" onclick="selectOption(${i})" id="opt-${i}">
+        <span class="option-letter">${letters[i]}</span>
+        <span>${opt}</span>
+      </button>
+    `).join('');
+
+    const html = `
+      <div style="animation: fadeIn 0.3s ease;">
+        <span class="category-tag">${q.category}</span>
+        <div class="question-title">${q.question}</div>
+        <div class="context-box">🎵 ${q.context}</div>
+        <div class="options-list">${optionsHtml}</div>
+        <div class="feedback-box" id="feedback-box"></div>
+      </div>
+    `;
+
+    document.getElementById('quiz-area').innerHTML = html;
+  }
+
+  function selectOption(index) {
+    if (answered) return;
+    answered = true;
+
+    const q = questions[currentIdx];
+    const isCorrect = (index === q.correctIndex);
+    const feedbackBox = document.getElementById('feedback-box');
+
+    // Deshabilitar botones y aplicar colores
+    for (let i = 0; i < q.options.length; i++) {
+      const btn = document.getElementById(`opt-${i}`);
+      btn.disabled = true;
+      if (i === q.correctIndex) {
+        btn.classList.add('correct');
+      } else if (i === index) {
+        btn.classList.add('incorrect');
+      }
+    }
+
+    if (isCorrect) {
+      playSound('correct');
+      score++;
+      streak++;
+      xp += 15 + (streak * 2);
+      document.getElementById('streak-count').innerText = streak;
+      document.getElementById('xp-count').innerText = xp;
+
+      feedbackBox.className = 'feedback-box correct';
+      feedbackBox.innerHTML = `<b>¡Excelente! 🎉</b><br>${q.explanation}`;
+    } else {
+      playSound('wrong');
+      streak = 0;
+      document.getElementById('streak-count').innerText = streak;
+
+      feedbackBox.className = 'feedback-box incorrect';
+      feedbackBox.innerHTML = `<b>Respuesta Incorrecta</b><br>${q.explanation}`;
+    }
+
+    document.getElementById('btn-next').disabled = false;
+    document.getElementById('btn-next').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function nextQuestion() {
+    currentIdx++;
+    if (currentIdx < questions.length) {
+      renderQuestion();
+    } else {
+      showResults();
+    }
+  }
+
+  function showResults() {
+    playSound('correct');
+    const total = questions.length;
+    const percentage = Math.round((score / total) * 100);
+
+    let trophy = '🏆';
+    let message = '¡Extraordinario dominio de la canción!';
+    if (percentage < 60) {
+      trophy = '🎧';
+      message = '¡Buen intento! Repasa la letra en el reproductor de Escucha Activa.';
+    } else if (percentage < 85) {
+      trophy = '🌟';
+      message = '¡Muy buen trabajo! Tienes gran oído y vocabulario.';
+    }
+
+    const html = `
+      <div class="results-container">
+        <div class="results-trophy">${trophy}</div>
+        <div class="results-title">¡Quiz Completado!</div>
+        <div class="results-subtitle">${message}</div>
+
+        <div class="results-score-grid">
+          <div class="score-card">
+            <div class="score-value">${score}/${total}</div>
+            <div class="score-label">Aciertos</div>
+          </div>
+          <div class="score-card">
+            <div class="score-value">${percentage}%</div>
+            <div class="score-label">Precisión</div>
+          </div>
+          <div class="score-card">
+            <div class="score-value">+${xp}</div>
+            <div class="score-label">XP Ganada</div>
+          </div>
+        </div>
+
+        <div class="results-actions">
+          <a href="../../player.html?song=KatyPerry_TheOneThatGotAway" class="btn-next" style="text-decoration:none; justify-content:center;">
+            🎧 Practicar Escucha Activa
+          </a>
+          <button class="btn-next" onclick="restartQuiz()" style="background:rgba(255,255,255,0.08); box-shadow:none; justify-content:center;">
+            🔄 Repetir Quiz
+          </button>
+          <a href="../../index.html" class="btn-back" style="justify-content:center; margin-top:10px;">
+            🏠 Volver al Catálogo Principal
+          </a>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('quiz-area').innerHTML = html;
+    document.querySelector('.progress-wrapper').style.display = 'none';
+    document.querySelector('.footer-actions').style.display = 'none';
+  }
+
+  function restartQuiz() {
+    currentIdx = 0;
+    score = 0;
+    streak = 0;
+    xp = 0;
+    document.getElementById('streak-count').innerText = '0';
+    document.getElementById('xp-count').innerText = '0';
+    document.querySelector('.progress-wrapper').style.display = 'block';
+    document.querySelector('.footer-actions').style.display = 'flex';
+    renderQuestion();
+  }
+
+  // Inicializar al cargar
+  window.addEventListener('DOMContentLoaded', renderQuestion);
+</script>
+
+</body>
+</html>

@@ -750,6 +750,8 @@
         ? [`Canciones/${song}/${customAudio}`] 
         : [
             `Canciones/${song}/voz.mp3`,
+            `Canciones/${song}/Katy Perry - The One That Got Away SOLO VOZ.mp3`,
+            `Canciones/${song}/Katy Perry - The One That Got Away ORIGINAL.mp3`,
             `Canciones/${song}/Shawn Mendes - Stitches AUDIO SIN MUSICA.mp3`,
             `Canciones/${song}/Shawn Mendes - Stitches (Lyrics).mp3`,
             `Canciones/${song}/audio.mp3`
@@ -778,6 +780,7 @@
           let cleanName = song.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
           if (song === 'Shawn_Mendes_Stitches') cleanName = 'Shawn Mendes - Stitches';
           if (song === 'ArianaGrande_HateThatIMadeYouLoveMe') cleanName = 'Ariana Grande - Hate That I Made You Love Me';
+          if (song === 'KatyPerry_TheOneThatGotAway') cleanName = 'Katy Perry - The One That Got Away';
 
           document.querySelector('header h1').innerText = cleanName + ' 🎵';
           document.querySelector('header p').innerText = "Escucha Activa - Presiona Siguiente o Espacio para empezar";

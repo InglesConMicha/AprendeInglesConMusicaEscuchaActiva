@@ -234,6 +234,7 @@
 
     .card-artist.cyan { color: var(--accent); }
     .card-artist.lavender { color: #c084fc; }
+    .card-artist.amber { color: #f59e0b; }
     .card-artist.muted { color: rgba(255,255,255,0.3); }
 
     /* Topics */
@@ -255,6 +256,7 @@
     }
 
     .topic-dot.lavender { background: #c084fc; }
+    .topic-dot.amber { background: #f59e0b; }
 
     /* Actions */
     .card-actions {
@@ -708,6 +710,20 @@ const songs = [
     ]
   },
   {
+    id: 'KatyPerry_TheOneThatGotAway',
+    title: 'The One That Got Away',
+    artist: 'Katy Perry',
+    artistClass: 'amber',
+    level: 'Intermedio',
+    cover: 'Canciones/KatyPerry_TheOneThatGotAway/cover.svg',
+    topics: [
+      { label: 'Vocabulario', text: 'Phrasal verb "Make out", "Muse", "Clue"' },
+      { label: 'Gramática', text: 'Hábitos pasados: "Used to" y "Would"' },
+      { label: 'Modismos', text: '"The one that got away", "Face the music"' },
+      { label: 'Expresión', text: 'Modal perfect: "I should\'ve told you"' },
+    ]
+  },
+  {
     id: 'Coldplay_Yellow',
     title: 'Yellow',
     artist: 'Coldplay',
@@ -747,7 +763,9 @@ function buildCover(song) {
 }
 
 function buildTopics(song) {
-  const dotClass = song.artistClass === 'lavender' ? 'lavender' : '';
+  let dotClass = '';
+  if (song.artistClass === 'lavender') dotClass = 'lavender';
+  if (song.artistClass === 'amber') dotClass = 'amber';
   return song.topics.map(t => `
     <div class="topic-row">
       <div class="topic-dot ${dotClass}"></div>
