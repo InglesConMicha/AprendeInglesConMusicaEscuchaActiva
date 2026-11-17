@@ -28,3 +28,25 @@ Plataforma privada y personalizada para generar contenido de alto impacto, video
 
 ### 3. 🎧 Escucha Activa (`index.html` y `player.html`)
 - Catálogo de canciones y entrenamiento auditivo frase por frase a ciegas con ejercicios y quizzes.
+
+### 4. 🎼 Estudio de Adaptación Musical al Español (`adaptador-musical.html`)
+- **Taller Creativo en 3 Columnas**:
+  - **Columna 1: Original en Inglés (LRC & Audio)** con timestamps, reproducción individual y métrica de sílabas original.
+  - **Columna 2: Traducción Literal (Guía)** para mantener intacto el significado y el mensaje de cada verso, con sugerencias automáticas de traducción.
+  - **Columna 3: Adaptación Rítmica en Español** con compositor interactivo donde escribes tu adaptación musical.
+- **Bucle Continuo y Re-escucha Inmediata de Frases**:
+  - Botón **Bucle de Línea** (`Alt + L`) para reproducir en bucle infinito la frase actual mientras cantas y ajustas tu letra al compás.
+  - Botón **Escuchar otra vez** (`Ctrl + Espacio` o `R`) para repetir la línea una vez desde el inicio.
+  - Control de velocidad (`0.75x`, `0.85x`, `1.0x`, `1.15x`) para desmenuzar las sílabas y la cadencia melódica.
+- **Contador Silábico & Métrica Poética en Tiempo Real**:
+  - Cálculo instantáneo de sílabas métricas en español (incluyendo sinalefas) frente a las sílabas del verso en inglés.
+  - Indicador visual inteligente: coincidencia exacta (verde), leve desfase de ±1 sílaba (amarillo) o ajuste rítmico requerido (rojo).
+- **Asistente de Rimas y Diccionario Musical**:
+  - Buscador integrado de rimas consonantes y asonantes en español con inserción con un clic.
+- **Modo Canto a Pantalla Completa (Karaoke)**:
+  - Ensayar la canción completa con la adaptación en pantalla grande sincronizada con el audio original.
+- **Exportación Flexible**:
+  - Descarga directa de archivo `.lrc` en español (con los timestamps originales listos para reproducir).
+  - Descarga de guion completo de 3 columnas (`.txt`) para doblaje o estudio.
+  - Envío y prueba con un clic en el Reproductor de Escucha Activa (`player.html`).
+  - Interconexión directa desde el Creador de LRC (`crear-lrc.html`).

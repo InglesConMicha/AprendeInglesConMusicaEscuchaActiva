@@ -1274,6 +1274,10 @@
     </a>
 
     <div class="header-actions">
+      <a href="adaptador-musical.html" class="btn-nav" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.35); background: rgba(192, 132, 252, 0.1);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 18 6-6-6-6"/><circle cx="6" cy="18" r="3" fill="#38bdf8"/><path d="M9 18V5l12-2v13"/><circle cx="18" cy="16" r="3" fill="#c084fc"/></svg>
+        Adaptador Musical
+      </a>
       <a href="voz-en-off.html" class="btn-nav" style="color: #fca5a5; border-color: rgba(239, 68, 68, 0.35); background: rgba(239, 68, 68, 0.1);">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
         Voz en Off
@@ -1662,6 +1666,15 @@ Sincroniza las líneas para generar el contenido aquí...</div>
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
             Probar en Reproductor
+          </button>
+          <button class="btn-export secondary" onclick="sendToAdaptador()" title="Enviar letra y tiempos al software de Adaptación Musical al Español" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.4); background: rgba(192, 132, 252, 0.12);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="m9 18 6-6-6-6"/>
+              <circle cx="6" cy="18" r="3" fill="#38bdf8"/>
+              <path d="M9 18V5l12-2v13"/>
+              <circle cx="18" cy="16" r="3" fill="#c084fc"/>
+            </svg>
+            Adaptar a Español
           </button>
         </div>
 
@@ -2865,6 +2878,19 @@ Gotta get you out of my head, get you out of my head`;
   function testInPlayer() {
     const url = 'player.html?song=Shawn_Mendes_Stitches';
     window.open(url, '_blank');
+  }
+
+  function sendToAdaptador() {
+    const content = generateLrcContent();
+    if (!content) {
+      showToast("No hay líneas para transferir");
+      return;
+    }
+    const title = document.getElementById('meta-title').value.trim() || 'Canción';
+    localStorage.setItem('adaptador_lrc_import', content);
+    localStorage.setItem('adaptador_lrc_title', title);
+    window.open('adaptador-musical.html', '_blank');
+    showToast("Abriendo en Adaptador Musical 🎼");
   }
 
   // === KEYBOARD SHORTCUTS ===

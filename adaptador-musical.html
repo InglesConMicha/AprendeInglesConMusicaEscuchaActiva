@@ -1,0 +1,2581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estudio de Adaptación Musical al Español — Taller de Rima & Métrica</title>
+  <meta name="description" content="Software profesional para escribir adaptaciones musicales al español a partir de archivos LRC. Escucha líneas en bucle, compara traducciones literales y cuadra la métrica silábica con la melodía original.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2.2'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3Ccircle cx='6' cy='18' r='3' fill='%2338bdf8'/%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='18' cy='16' r='3' fill='%23c084fc'/%3E%3C/svg%3E">
+
+  <style>
+    :root {
+      --bg: #050914;
+      --surface: #0a1326;
+      --card: rgba(13, 24, 46, 0.85);
+      --card-hover: rgba(18, 34, 64, 0.95);
+      --card-active: rgba(26, 48, 88, 0.98);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(56, 189, 248, 0.6);
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.35);
+      --accent2: #818cf8;
+      --accent3: #c084fc;
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.3);
+      --warning: #f59e0b;
+      --warning-glow: rgba(245, 158, 11, 0.25);
+      --danger: #f43f5e;
+      --danger-glow: rgba(244, 63, 94, 0.25);
+      --text: #f0f9ff;
+      --muted: #94a3b8;
+      --dim: #475569;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background gradient */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 85% 90%, rgba(129, 140, 248, 0.07) 0%, transparent 50%),
+        radial-gradient(circle at 50% 40%, rgba(192, 132, 252, 0.04) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* === HEADER === */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      background: rgba(5, 9, 20, 0.92);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+    }
+
+    .header-inner {
+      max-width: 1560px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(192, 132, 252, 0.25));
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+    }
+
+    .brand-text h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      color: #040914;
+      letter-spacing: 0.06em;
+    }
+
+    .brand-text p {
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-link.active {
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #040914;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #38bdf8, #7dd3fc);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
+    }
+
+    .btn-purple {
+      background: linear-gradient(135deg, #7c3aed, #c084fc);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(192, 132, 252, 0.3);
+    }
+
+    .btn-purple:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(192, 132, 252, 0.45);
+    }
+
+    .btn-emerald {
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-emerald:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+    }
+
+    /* === STICKY PLAYER DOCK === */
+    .player-dock {
+      position: sticky;
+      top: 65px;
+      z-index: 50;
+      background: rgba(8, 16, 32, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.08);
+      padding: 12px 24px;
+    }
+
+    .dock-inner {
+      max-width: 1560px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .dock-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .active-line-focus-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(14, 25, 48, 0.8);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 12px;
+      padding: 6px 14px;
+      flex: 1;
+      min-width: 320px;
+    }
+
+    .focus-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      padding: 4px 8px;
+      min-width: 65px;
+    }
+
+    .focus-badge .num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .focus-badge .time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+    }
+
+    .focus-texts {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+
+    .focus-orig {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .focus-adapted {
+      font-size: 0.82rem;
+      color: var(--accent);
+      font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .metric-comparison-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .metric-match {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+
+    .metric-warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .metric-alert {
+      background: rgba(244, 63, 94, 0.15);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.35);
+    }
+
+    /* Controls in dock */
+    .dock-controls-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .dock-main-btns {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-dock-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-dock-circle:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: var(--accent);
+    }
+
+    .btn-dock-circle.primary-play {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #040914;
+      border: none;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+    }
+
+    .btn-dock-circle.primary-play:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 18px rgba(56, 189, 248, 0.5);
+    }
+
+    .btn-dock-loop {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 12px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      cursor: pointer;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      transition: all 0.2s;
+    }
+
+    .btn-dock-loop:hover {
+      background: rgba(16, 185, 129, 0.22);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-dock-loop.active {
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #032014;
+      border-color: #10b981;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.55);
+      animation: pulseGlow 1.8s infinite;
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+      50% { box-shadow: 0 0 24px rgba(16, 185, 129, 0.8); }
+      100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+    }
+
+    .btn-dock-replay {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent);
+      transition: all 0.2s;
+    }
+
+    .btn-dock-replay:hover {
+      background: rgba(56, 189, 248, 0.2);
+    }
+
+    /* Speed & Options */
+    .dock-options {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .speed-select {
+      background: rgba(10, 19, 36, 0.9);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .speed-select:focus {
+      border-color: var(--accent);
+    }
+
+    .toggle-lbl {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.76rem;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-lbl input {
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* Time Scrubber Row */
+    .timeline-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .time-stamp-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      min-width: 58px;
+    }
+
+    .timeline-bar-wrap {
+      flex: 1;
+      position: relative;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .timeline-progress {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+      border-radius: 6px;
+      transition: width 0.08s linear;
+    }
+
+    .timeline-loop-segment {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      background: rgba(16, 185, 129, 0.35);
+      border-left: 2px solid #10b981;
+      border-right: 2px solid #10b981;
+      pointer-events: none;
+      display: none;
+    }
+
+    /* === MAIN CONTAINER === */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 20px 24px 80px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Song Info Banner / Setup Bar */
+    .song-setup-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .song-meta-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .song-cover-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(129, 140, 248, 0.2));
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: var(--accent);
+      overflow: hidden;
+    }
+
+    .song-meta-text h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .song-meta-text p {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .demo-songs-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .demo-tag {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-pill-demo {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-pill-demo:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.35);
+      color: var(--accent);
+    }
+
+    /* 3-COLUMN ADAPTATION WORKBENCH */
+    .workbench-header-bar {
+      display: grid;
+      grid-template-columns: 360px 1fr 1.35fr;
+      gap: 16px;
+      padding: 10px 16px;
+      background: rgba(14, 25, 48, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .col-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .col-title.accent-sky { color: var(--accent); }
+    .col-title.accent-indigo { color: var(--accent2); }
+    .col-title.accent-purple { color: var(--accent3); }
+
+    /* Lines List */
+    .lines-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Single Line Row Card */
+    .line-card {
+      display: grid;
+      grid-template-columns: 360px 1fr 1.35fr;
+      gap: 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .line-card:hover {
+      background: var(--card-hover);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .line-card.active {
+      background: var(--card-active);
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 4px 20px rgba(56, 189, 248, 0.15), inset 0 0 12px rgba(56, 189, 248, 0.05);
+    }
+
+    .line-card.is-looping {
+      border-color: rgba(16, 185, 129, 0.6);
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2), inset 0 0 12px rgba(16, 185, 129, 0.06);
+    }
+
+    /* Left Col: Original & Audio Actions */
+    .col-orig {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .col-orig-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .line-idx-tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .line-timestamp-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 2px 7px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .line-timestamp-btn:hover {
+      background: rgba(56, 189, 248, 0.22);
+    }
+
+    .orig-text {
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .orig-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .btn-line-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 9px;
+      border-radius: 7px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .btn-line-action:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-line-action.active-loop {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.5);
+      color: #34d399;
+    }
+
+    .syllable-count-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    /* Center Col: Literal Translation (Guide) */
+    .col-literal {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .literal-textarea {
+      width: 100%;
+      height: 100%;
+      min-height: 70px;
+      background: rgba(10, 18, 36, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: #cbd5e1;
+      font-family: inherit;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      resize: vertical;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .literal-textarea:focus {
+      border-color: rgba(129, 140, 248, 0.5);
+      background: rgba(14, 25, 48, 0.85);
+      color: #fff;
+    }
+
+    .literal-tools-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .btn-mini-tool {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+
+    .btn-mini-tool:hover {
+      color: var(--accent2);
+    }
+
+    /* Right Col: Spanish Adaptation (Creative Workshop) */
+    .col-adapt {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+    }
+
+    .adapt-textarea {
+      width: 100%;
+      min-height: 70px;
+      background: rgba(12, 22, 44, 0.85);
+      border: 1px solid rgba(192, 132, 252, 0.25);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.45;
+      resize: vertical;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .adapt-textarea:focus {
+      border-color: rgba(192, 132, 252, 0.7);
+      background: rgba(18, 32, 62, 0.95);
+      box-shadow: 0 0 14px rgba(192, 132, 252, 0.2);
+    }
+
+    .adapt-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .metric-status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .metric-status-tag.exact {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+
+    .metric-status-tag.near {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .metric-status-tag.far {
+      background: rgba(244, 63, 94, 0.15);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.35);
+    }
+
+    .rhyme-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: rgba(192, 132, 252, 0.15);
+      color: var(--accent3);
+      border: 1px solid rgba(192, 132, 252, 0.3);
+    }
+
+    .btn-rhyme-helper {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent3);
+      background: rgba(192, 132, 252, 0.1);
+      border: 1px solid rgba(192, 132, 252, 0.25);
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn-rhyme-helper:hover {
+      background: rgba(192, 132, 252, 0.22);
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      background: var(--card);
+      border: 1px dashed var(--border);
+      border-radius: 18px;
+      margin: 20px 0;
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 14px;
+    }
+
+    .empty-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .empty-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto 20px;
+      line-height: 1.5;
+    }
+
+    /* === MODALS & DRAWERS === */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 8, 16, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #0a1326;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      max-width: 680px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.1);
+      padding: 24px;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.18rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-close-modal {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1.3rem;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+
+    .btn-close-modal:hover {
+      color: #fff;
+    }
+
+    /* Rhyme Dictionary Drawer/Card */
+    .rhyme-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    .rhyme-word-pill {
+      background: rgba(192, 132, 252, 0.1);
+      border: 1px solid rgba(192, 132, 252, 0.25);
+      color: #e9d5ff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .rhyme-word-pill:hover {
+      background: rgba(192, 132, 252, 0.25);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    /* FULLSCREEN KARAOKE / SINGING MODE */
+    .karaoke-fullscreen {
+      position: fixed;
+      inset: 0;
+      background: #030712;
+      z-index: 150;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+    }
+
+    .karaoke-fullscreen.open {
+      display: flex;
+    }
+
+    .karaoke-close-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .karaoke-content {
+      max-width: 900px;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .karaoke-prev-line {
+      font-size: 1.2rem;
+      color: var(--dim);
+      opacity: 0.6;
+      transition: all 0.3s;
+    }
+
+    .karaoke-current-box {
+      background: rgba(14, 25, 48, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(56, 189, 248, 0.15);
+    }
+
+    .karaoke-orig-current {
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .karaoke-adapted-current {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 2.3rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.3;
+      background: linear-gradient(135deg, #38bdf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .karaoke-literal-current {
+      font-size: 0.95rem;
+      color: var(--dim);
+      margin-top: 10px;
+      font-style: italic;
+    }
+
+    .karaoke-next-line {
+      font-size: 1.2rem;
+      color: var(--dim);
+      opacity: 0.6;
+      transition: all 0.3s;
+    }
+
+    /* Toast */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(10, 20, 40, 0.96);
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      z-index: 200;
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .workbench-header-bar,
+      .line-card {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .dock-top-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <div class="brand-wrap">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m9 18 6-6-6-6"/>
+            <circle cx="6" cy="18" r="3" fill="#38bdf8"/>
+            <path d="M9 18V5l12-2v13"/>
+            <circle cx="18" cy="16" r="3" fill="#c084fc"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Adaptador Musical <span class="brand-badge">PRO</span></h1>
+          <p>Taller de Adaptación al Español · Métrica, Rima & Bucle de Audio</p>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Inicio</a>
+        <a href="voz-en-off.html" class="nav-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+          </svg>
+          Voz en Off
+        </a>
+        <a href="crear-lrc.html" class="nav-link">Crear LRC</a>
+        <a href="adaptador-musical.html" class="nav-link active">🎼 Adaptador Musical</a>
+        <a href="player.html" class="nav-link">Escucha Activa</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="openImportModal()" title="Cargar LRC o Audio">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importar
+        </button>
+        <button class="btn btn-purple" onclick="openKaraokeMode()" title="Modo canto y ensayo a pantalla completa">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Modo Canto
+        </button>
+        <button class="btn btn-primary" onclick="openExportModal()" title="Descargar LRC adaptado o guion">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- STICKY AUDIO & LOOP PLAYER DOCK -->
+  <div class="player-dock">
+    <div class="dock-inner">
+      <div class="dock-top-row">
+        <!-- Active line quick info -->
+        <div class="active-line-focus-box">
+          <div class="focus-badge">
+            <span class="num" id="dock-line-num">Línea 1</span>
+            <span class="time" id="dock-line-time">00:00.00</span>
+          </div>
+          <div class="focus-texts">
+            <div class="focus-orig" id="dock-focus-orig">Carga un archivo LRC o una canción demo para comenzar</div>
+            <div class="focus-adapted" id="dock-focus-adapted">Tu adaptación aparecerá aquí...</div>
+          </div>
+          <div id="dock-metric-indicator" class="metric-comparison-pill metric-match">
+            Métrica: 0 / 0
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="dock-controls-row">
+          <div class="dock-main-btns">
+            <button class="btn-dock-circle" onclick="prevLine()" title="Línea anterior [Flecha Arriba]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+            </button>
+            <button class="btn-dock-circle primary-play" id="btn-master-play" onclick="togglePlay()" title="Reproducir / Pausar [Espacio]">
+              <svg id="master-play-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <button class="btn-dock-circle" onclick="nextLine()" title="Siguiente línea [Flecha Abajo]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+            </button>
+          </div>
+
+          <!-- Bucle de Línea (Loop) -->
+          <button class="btn-dock-loop" id="btn-dock-loop" onclick="toggleLoopCurrentLine()" title="Escuchar esta línea continuamente en bucle para ensayar la métrica">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+            <span id="btn-loop-text">Bucle de Línea</span>
+          </button>
+
+          <!-- Escuchar otra vez una línea -->
+          <button class="btn-dock-replay" onclick="rehearCurrentLine()" title="Escuchar esta línea una vez desde el inicio [Ctrl+Espacio o R]">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Escuchar otra vez
+          </button>
+
+          <div class="dock-options">
+            <select class="speed-select" id="speed-select" onchange="changePlaybackSpeed(this.value)" title="Velocidad de reproducción (reduce para analizar sílabas y cadencia)">
+              <option value="0.75">0.75x Lenta</option>
+              <option value="0.85">0.85x Ensayo</option>
+              <option value="1.0" selected>1.0x Normal</option>
+              <option value="1.15">1.15x Rápida</option>
+            </select>
+
+            <label class="toggle-lbl" title="Avanzar automáticamente a la siguiente línea al terminar la frase">
+              <input type="checkbox" id="auto-advance-chk" checked>
+              Auto-avance
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline & Scrubber -->
+      <div class="timeline-row">
+        <span class="time-stamp-display" id="time-current">00:00.00</span>
+        <div class="timeline-bar-wrap" id="timeline-wrap" onclick="seekByTimeline(event)">
+          <div class="timeline-loop-segment" id="timeline-loop-segment"></div>
+          <div class="timeline-progress" id="timeline-progress"></div>
+        </div>
+        <span class="time-stamp-display" id="time-total">00:00.00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN WORKBENCH -->
+  <main>
+    <!-- Song Setup / Selector Bar -->
+    <div class="song-setup-card">
+      <div class="song-meta-left">
+        <div class="song-cover-thumb" id="song-thumb">🎵</div>
+        <div class="song-meta-text">
+          <h2 id="song-title-display">Shawn Mendes — Stitches</h2>
+          <p id="song-status-display">Audio cargado · 57 frases detectadas · Modo Adaptación Activo</p>
+        </div>
+      </div>
+
+      <div class="demo-songs-wrap">
+        <span class="demo-tag">Cargar Canción Demo:</span>
+        <button class="btn-pill-demo" onclick="loadDemoSong('shawn')">Shawn Mendes - Stitches</button>
+        <button class="btn-pill-demo" onclick="loadDemoSong('katy')">Katy Perry - The One That Got Away</button>
+        <button class="btn-pill-demo" onclick="loadDemoSong('ariana')">Ariana Grande - Hate That I Made You</button>
+      </div>
+    </div>
+
+    <!-- 3-Column Workbench Header -->
+    <div class="workbench-header-bar">
+      <div class="col-title accent-sky">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        1. Original en Inglés (LRC & Audio)
+      </div>
+      <div class="col-title accent-indigo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+        2. Traducción Literal (Guía de Significado)
+      </div>
+      <div class="col-title accent-purple">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        3. Tu Adaptación en Español (Rítmica & Métrica)
+      </div>
+    </div>
+
+    <!-- Lines Container -->
+    <div class="lines-container" id="lines-list">
+      <!-- Dynamic lines will be injected here -->
+    </div>
+  </main>
+
+  <!-- MODAL: IMPORTAR LRC Y AUDIO -->
+  <div class="modal-overlay" id="modal-import">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importar Canción & Archivo LRC
+        </h3>
+        <button class="btn-close-modal" onclick="closeImportModal()">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <label style="font-size: 0.82rem; font-weight: 700; color: var(--accent); display: block; margin-bottom: 6px;">
+            1. Archivo de Audio (MP3, WAV, M4A, OGG)
+          </label>
+          <input type="file" id="input-audio-file" accept="audio/*" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: var(--text);">
+        </div>
+
+        <div>
+          <label style="font-size: 0.82rem; font-weight: 700; color: var(--accent2); display: block; margin-bottom: 6px;">
+            2. Archivo LRC (.lrc)
+          </label>
+          <input type="file" id="input-lrc-file" accept=".lrc,.txt" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: var(--text);">
+        </div>
+
+        <div>
+          <label style="font-size: 0.82rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 6px;">
+            O pega el contenido LRC directamente:
+          </label>
+          <textarea id="paste-lrc-text" placeholder="[00:06.79] I thought that I'd been hurt before&#10;[00:12.44] But no one's ever left me quite this sore..." style="width: 100%; height: 130px; background: rgba(10,18,36,0.8); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; resize: vertical;"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+          <button class="btn btn-secondary" onclick="closeImportModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="processImport()">Cargar y Empezar a Adaptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EXPORTAR -->
+  <div class="modal-overlay" id="modal-export">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar Adaptación Musical
+        </h3>
+        <button class="btn-close-modal" onclick="closeExportModal()">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <p style="font-size: 0.86rem; color: var(--muted);">
+          Elige el formato de salida para tu adaptación en español:
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h4 style="color: var(--accent); font-size: 0.95rem; margin-bottom: 4px;">🎵 Archivo .LRC en Español</h4>
+              <p style="font-size: 0.76rem; color: var(--muted); margin-bottom: 12px;">Letra adaptada con los timestamps sincronizados, lista para reproductores de música.</p>
+            </div>
+            <button class="btn btn-primary" onclick="downloadSpanishLRC()" style="width: 100%; justify-content: center;">Descargar .LRC Español</button>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h4 style="color: var(--accent3); font-size: 0.95rem; margin-bottom: 4px;">📑 Guion Completo (3 Columnas)</h4>
+              <p style="font-size: 0.76rem; color: var(--muted); margin-bottom: 12px;">Documento de texto con Inglés Original, Traducción Literal y Adaptación para estudio o doblaje.</p>
+            </div>
+            <button class="btn btn-purple" onclick="downloadFullScript()" style="width: 100%; justify-content: center;">Descargar Guion TXT</button>
+          </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 14px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <h4 style="color: #34d399; font-size: 0.92rem;">🎧 Probar en Reproductor de Escucha Activa</h4>
+            <p style="font-size: 0.76rem; color: var(--muted);">Guarda en memoria temporal y abre en el reproductor interactivo del sitio.</p>
+          </div>
+          <button class="btn btn-emerald" onclick="testInPlayer()">Abrir en Reproductor</button>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary" onclick="copyAdaptedLyrics()" style="flex: 1; justify-content: center;">📋 Copiar Letra Adaptada</button>
+          <button class="btn btn-secondary" onclick="copyFullLRC()" style="flex: 1; justify-content: center;">📋 Copiar LRC Completo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DICCIONARIO DE RIMAS & MÉTRICA -->
+  <div class="modal-overlay" id="modal-rhyme">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Buscador de Rimas & Métrica para Adaptación
+        </h3>
+        <button class="btn-close-modal" onclick="closeRhymeModal()">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="rhyme-search-input" placeholder="Escribe una palabra en español (ej. dolor, vida, respirar)..." style="flex: 1; padding: 10px 14px; background: rgba(10,18,36,0.8); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 0.9rem; outline: none;">
+          <button class="btn btn-purple" onclick="searchRhymes()">Buscar Rimas</button>
+        </div>
+
+        <div>
+          <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent3); text-transform: uppercase;">Rimas Sugeridas (Haz clic para insertar):</span>
+          <div class="rhyme-cloud" id="rhyme-results-cloud">
+            <span style="font-size: 0.8rem; color: var(--dim); padding: 10px;">Ingresa una palabra para ver rimas consonantes y asonantes útiles para canciones.</span>
+          </div>
+        </div>
+
+        <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 12px;">
+          <h5 style="font-size: 0.8rem; color: var(--accent); margin-bottom: 4px;">💡 Consejos de Oro para Adaptaciones Musicales:</h5>
+          <ul style="font-size: 0.76rem; color: var(--muted); padding-left: 18px; line-height: 1.5;">
+            <li><strong>Sinalefa:</strong> Cuando una palabra termina en vocal y la siguiente empieza con vocal o 'h', se unen en una sola sílaba rítmica (ej. <em>"me_han dejado"</em> cuenta como 3 sílabas).</li>
+            <li><strong>Acento final:</strong> Si el verso termina en palabra aguda (ej. <em>dolor</em>), musicalmente suele llenar el tiempo de 2 sílabas. Si es esdrújula (ej. <em>lágrima</em>), resta 1.</li>
+            <li><strong>Cadencia antes que literalidad:</strong> Es mejor cambiar una metáfora si eso preserva el ritmo y la emoción exacta de la melodía original.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FULLSCREEN KARAOKE / SINGING MODE -->
+  <div class="karaoke-fullscreen" id="karaoke-screen">
+    <button class="karaoke-close-btn" onclick="closeKaraokeMode()">✕ Salir del Modo Canto [Esc]</button>
+    <div class="karaoke-content">
+      <div class="karaoke-prev-line" id="karaoke-prev">...</div>
+      <div class="karaoke-current-box">
+        <div class="karaoke-orig-current" id="karaoke-orig">Original lyrics will show here</div>
+        <div class="karaoke-adapted-current" id="karaoke-adapted">Tu adaptación en español</div>
+        <div class="karaoke-literal-current" id="karaoke-literal">Traducción literal</div>
+      </div>
+      <div class="karaoke-next-line" id="karaoke-next">...</div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-msg" id="toast-msg">Mensaje de prueba</div>
+
+  <!-- HIDDEN AUDIO ELEMENT -->
+  <audio id="master-audio" preload="auto"></audio>
+
+  <script>
+    // === APPLICATION STATE ===
+    const state = {
+      songTitle: 'Shawn Mendes — Stitches',
+      audioSrc: 'Canciones/Shawn_Mendes_Stitches/Shawn Mendes - Stitches (Lyrics).mp3',
+      lines: [], // Array of { id, startTime, endTime, origText, literalText, adaptedText, notes }
+      activeLineIndex: 0,
+      isLoopingActiveLine: false,
+      loopPaddingStart: 0.05, // seconds
+      loopPaddingEnd: 0.25,   // seconds
+      isPlaying: false,
+      playbackRate: 1.0,
+      autoAdvance: true
+    };
+
+    const audio = document.getElementById('master-audio');
+
+    // === DEMO SONGS DATABASE ===
+    const DEMO_SONGS = {
+      shawn: {
+        title: 'Shawn Mendes — Stitches',
+        audioCandidates: [
+          'Canciones/Shawn_Mendes_Stitches/Shawn Mendes - Stitches (Lyrics).mp3',
+          'Canciones/Shawn_Mendes_Stitches/Shawn Mendes - Stitches AUDIO SIN MUSICA.mp3'
+        ],
+        lrcPath: 'Canciones/Shawn_Mendes_Stitches/letra.lrc',
+        diapositivaPath: 'Canciones/Shawn_Mendes_Stitches/diapositiva.lrc'
+      },
+      katy: {
+        title: 'Katy Perry — The One That Got Away',
+        audioCandidates: [
+          'Canciones/KatyPerry_TheOneThatGotAway/Katy Perry - The One That Got Away ORIGINAL.mp3',
+          'Canciones/KatyPerry_TheOneThatGotAway/Katy Perry - The One That Got Away SOLO VOZ.mp3'
+        ],
+        lrcPath: 'Canciones/KatyPerry_TheOneThatGotAway/letra.lrc',
+        diapositivaPath: 'Canciones/KatyPerry_TheOneThatGotAway/diapositiva.lrc'
+      },
+      ariana: {
+        title: 'Ariana Grande — Hate That I Made You Love Me',
+        audioCandidates: [
+          'Canciones/ArianaGrande_HateThatIMadeYouLoveMe/voz.mp3'
+        ],
+        lrcPath: 'Canciones/ArianaGrande_HateThatIMadeYouLoveMe/letra.lrc',
+        diapositivaPath: 'Canciones/ArianaGrande_HateThatIMadeYouLoveMe/diapositiva.lrc'
+      }
+    };
+
+    // === SPANISH & ENGLISH SYLLABLE COMPUTATION ENGINE ===
+    // Computes metric and grammatical syllables accurately
+    function countSpanishSyllables(text) {
+      if (!text || !text.trim()) return 0;
+      const clean = text.trim().toLowerCase()
+        .replace(/[^a-záéíóúüñ\s]/gi, ' ')
+        .replace(/\s+/g, ' ');
+
+      const words = clean.split(' ').filter(w => w.length > 0);
+      if (words.length === 0) return 0;
+
+      let totalGrammatical = 0;
+      let sinalefas = 0;
+
+      for (let i = 0; i < words.length; i++) {
+        totalGrammatical += countWordSyllablesSpanish(words[i]);
+        if (i < words.length - 1) {
+          const currentWord = words[i];
+          const nextWord = words[i + 1];
+          // Check for sinalefa: word ending in vowel + next word starting in vowel or h+vowel
+          const lastChar = currentWord[currentWord.length - 1];
+          const firstChar = nextWord[0];
+          const secondChar = nextWord.length > 1 ? nextWord[1] : '';
+
+          const isVowel = c => /[aeiouáéíóúüy]/i.test(c);
+          if (isVowel(lastChar)) {
+            if (isVowel(firstChar) || (firstChar === 'h' && isVowel(secondChar))) {
+              sinalefas++;
+            }
+          }
+        }
+      }
+
+      // Poetic metric syllables = grammatical syllables minus sinalefas
+      return Math.max(1, totalGrammatical - sinalefas);
+    }
+
+    function countWordSyllablesSpanish(word) {
+      if (!word) return 0;
+      // Strong: a, e, o, á, é, ó. Weak: i, u, ü, í, ú
+      // Remove trailing non-vocalic characters
+      let count = 0;
+      const vowels = /[aeiouáéíóúü]/gi;
+      const matches = word.match(vowels);
+      if (!matches) return 1;
+
+      // Simple heuristic for Spanish vowel clusters:
+      // diphthongs: strong+weak or weak+weak count as 1
+      // hiatus: strong+strong or accented weak count as 2
+      const diphthongRegex = /([aeoáéó][iuü]|[iuü][aeoáéó]|[iuü]{2})/gi;
+      const hiatusAccented = /([aeo][íú]|[íú][aeo])/gi;
+      const hiatusStrong = /([aeoáéó]{2})/gi;
+
+      let rawVowels = matches.length;
+      let diphthongs = (word.match(diphthongRegex) || []).length;
+      let hiatusWithAccent = (word.match(hiatusAccented) || []).length;
+
+      count = rawVowels - diphthongs + hiatusWithAccent;
+      return Math.max(1, count);
+    }
+
+    function countEnglishSyllables(text) {
+      if (!text || !text.trim()) return 0;
+      const words = text.toLowerCase().trim().replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(w => w.length > 0);
+      if (words.length === 0) return 0;
+
+      let count = 0;
+      for (const word of words) {
+        count += countWordSyllablesEnglish(word);
+      }
+      return Math.max(1, count);
+    }
+
+    function countWordSyllablesEnglish(word) {
+      if (word.length <= 3) return 1;
+      word = word.replace(/(?:[^laeiouy]|ed|es|e)$/, '');
+      word = word.replace(/^y/, '');
+      const syl = word.match(/[aeiouy]{1,2}/g);
+      return syl ? syl.length : 1;
+    }
+
+    // Extract rhyme ending for Spanish word
+    function getSpanishRhymeEnding(text) {
+      if (!text || !text.trim()) return '';
+      const clean = text.trim().toLowerCase().replace(/[^a-záéíóúüñ]/gi, ' ').trim();
+      const words = clean.split(/\s+/);
+      const lastWord = words[words.length - 1];
+      if (!lastWord || lastWord.length < 2) return '';
+
+      // Find last stressed vowel or last vowel
+      const vowels = 'aeiouáéíóúü';
+      let lastVowelIdx = -1;
+      for (let i = lastWord.length - 1; i >= 0; i--) {
+        if (vowels.includes(lastWord[i])) {
+          lastVowelIdx = i;
+          break;
+        }
+      }
+      if (lastVowelIdx === -1) return lastWord.slice(-2);
+      return lastWord.slice(Math.max(0, lastVowelIdx - 1));
+    }
+
+    // === BUILT-IN SPANISH RHYME DICTIONARY DATABASE ===
+    const RHYME_DB = {
+      'ar': ['amar', 'cantar', 'llorar', 'buscar', 'mirar', 'sanar', 'cambiar', 'olvidar', 'sanar', 'respirar', 'escapar', 'quedar', 'sonar', 'llegar', 'soñar', 'volar'],
+      'er': ['volver', 'perder', 'vencer', 'creer', 'caer', 'correr', 'arder', 'querer', 'poder', 'tener', 'entender', 'romper', 'saber', 'doler'],
+      'ir': ['vivir', 'sentir', 'morir', 'seguir', 'partir', 'latir', 'abrir', 'pedir', 'subir', 'herir', 'sufrir', 'huir', 'decir'],
+      'on': ['corazón', 'canción', 'razón', 'ilusión', 'pasión', 'prisión', 'dolor', 'perdón', 'unión', 'adiós', 'obsesión', 'atención', 'visión'],
+      'or': ['amor', 'dolor', 'temor', 'calor', 'clamor', 'favor', 'error', 'ardor', 'sabor', 'resplandor', 'traidor'],
+      'as': ['más', 'jamás', 'detrás', 'quizás', 'verás', 'tendrás', 'sabrás', 'harás', 'vivirás', 'podrás', 'caerás'],
+      'es': ['vez', 'pies', 'mes', 'después', 'luces', 'voces', 'dulces', 'piel', 'cruel', 'fiel', 'ayer'],
+      'ida': ['vida', 'herida', 'salida', 'partida', 'perdida', 'huida', 'vencida', 'sentida', 'dormida'],
+      'ado': ['quedado', 'olvidado', 'atado', 'llamado', 'cansado', 'pasado', 'marcado', 'curado', 'amado', 'abandonado'],
+      'ando': ['amando', 'llorando', 'buscando', 'rogando', 'rezando', 'esperando', 'volando', 'gritando', 'escapando'],
+      'erte': ['fuerte', 'muerte', 'suerte', 'verte', 'perderte', 'tenerte', 'herirte'],
+      'ente': ['mente', 'valiente', 'ardiente', 'siente', 'presente', 'frente', 'siempre', 'fuente'],
+      'igo': ['contigo', 'conmigo', 'amigo', 'abrigo', 'castigo', 'testigo', 'sigo']
+    };
+
+    // === INITIALIZATION & LOADERS ===
+    window.addEventListener('DOMContentLoaded', () => {
+      // Check if arriving from crear-lrc.html with exported data
+      checkIncomingImport();
+      // Load default demo song
+      loadDemoSong('shawn');
+      setupGlobalAudioListeners();
+      setupKeyboardShortcuts();
+    });
+
+    function checkIncomingImport() {
+      const incomingLRC = localStorage.getItem('adaptador_lrc_import');
+      const incomingTitle = localStorage.getItem('adaptador_lrc_title');
+      if (incomingLRC) {
+        localStorage.removeItem('adaptador_lrc_import');
+        localStorage.removeItem('adaptador_lrc_title');
+        setTimeout(() => {
+          parseAndSetLRC(incomingLRC, incomingTitle || 'Canción Importada');
+          showToast('¡LRC transferido exitosamente desde el Creador de LRC! 🎼');
+        }, 300);
+      }
+    }
+
+    function setupGlobalAudioListeners() {
+      audio.addEventListener('timeupdate', () => {
+        const cur = audio.currentTime;
+        const dur = audio.duration || 0;
+
+        document.getElementById('time-current').innerText = formatTime(cur);
+        document.getElementById('time-total').innerText = formatTime(dur);
+
+        if (dur > 0) {
+          const pct = (cur / dur) * 100;
+          document.getElementById('timeline-progress').style.width = `${pct}%`;
+        }
+
+        // Loop handling
+        if (state.isLoopingActiveLine && state.lines.length > 0) {
+          const currentLine = state.lines[state.activeLineIndex];
+          if (currentLine && currentLine.startTime !== null) {
+            const loopStart = Math.max(0, currentLine.startTime - state.loopPaddingStart);
+            const loopEnd = (currentLine.endTime || (currentLine.startTime + 3.5)) + state.loopPaddingEnd;
+
+            if (cur >= loopEnd || cur < loopStart) {
+              audio.currentTime = loopStart;
+              if (audio.paused) audio.play();
+            }
+          }
+        } else {
+          // Auto line tracking
+          trackActiveLineByTime(cur);
+        }
+      });
+
+      audio.addEventListener('play', () => {
+        state.isPlaying = true;
+        document.getElementById('master-play-icon').innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+      });
+
+      audio.addEventListener('pause', () => {
+        state.isPlaying = false;
+        document.getElementById('master-play-icon').innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+      });
+
+      audio.addEventListener('ended', () => {
+        state.isPlaying = false;
+        document.getElementById('master-play-icon').innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+      });
+    }
+
+    // === DEMO SONG LOADER ===
+    async function loadDemoSong(key) {
+      const demo = DEMO_SONGS[key];
+      if (!demo) return;
+
+      state.songTitle = demo.title;
+      document.getElementById('song-title-display').innerText = demo.title;
+      document.getElementById('song-status-display').innerText = 'Cargando pistas y letra sincronizada...';
+
+      // Set audio source
+      let audioLoaded = false;
+      for (const src of demo.audioCandidates) {
+        audio.src = src;
+        try {
+          await audio.load();
+          state.audioSrc = src;
+          audioLoaded = true;
+          break;
+        } catch (e) {
+          console.warn('Audio candidate failed:', src);
+        }
+      }
+
+      // Fetch LRC (prefer diapositiva.lrc if exists, else letra.lrc)
+      let lrcContent = '';
+      try {
+        const respDiap = await fetch(demo.diapositivaPath);
+        if (respDiap.ok) {
+          lrcContent = await respDiap.text();
+        }
+      } catch (e) {}
+
+      if (!lrcContent) {
+        try {
+          const respLetra = await fetch(demo.lrcPath);
+          if (respLetra.ok) {
+            lrcContent = await respLetra.text();
+          }
+        } catch (e) {}
+      }
+
+      if (lrcContent) {
+        parseAndSetLRC(lrcContent, demo.title);
+        document.getElementById('song-status-display').innerText = `Listo · ${state.lines.length} frases · Audio sincronizado`;
+        showToast(`Canción "${demo.title}" cargada exitosamente 🎵`);
+      } else {
+        document.getElementById('song-status-display').innerText = 'Error al cargar letra LRC';
+      }
+    }
+
+    // === PARSE LRC CONTENT ===
+    function parseAndSetLRC(lrcText, title = '') {
+      if (title) {
+        state.songTitle = title;
+        document.getElementById('song-title-display').innerText = title;
+      }
+
+      const lines = lrcText.split('\n');
+      const parsedLines = [];
+      let idx = 1;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+
+        // Skip metadata tags like [ti:], [ar:], [by:]
+        if (/^\[(ti|ar|al|by|offset|length):/i.test(trimmed)) continue;
+
+        // Handle standard [mm:ss.xx] or range [mm:ss.xx-mm:ss.xx]
+        const rangeMatch = /^\[(\d{2}:\d{2}\.\d{2})-(\d{2}:\d{2}\.\d{2})\](.*)$/.exec(trimmed);
+        const singleMatch = /^\[(\d{2}:\d{2}\.\d{2})\](.*)$/.exec(trimmed);
+
+        if (rangeMatch) {
+          const startTime = parseSeconds(rangeMatch[1]);
+          const endTime = parseSeconds(rangeMatch[2]);
+          const rawContent = rangeMatch[3];
+          const didactic = parseDidacticContent(rawContent);
+
+          parsedLines.push({
+            id: idx++,
+            startTime,
+            endTime,
+            origText: didactic.mainText,
+            literalText: didactic.spanish || '',
+            adaptedText: '',
+            notes: didactic.note || ''
+          });
+        } else if (singleMatch) {
+          const startTime = parseSeconds(singleMatch[1]);
+          const rawContent = singleMatch[2];
+          const didactic = parseDidacticContent(rawContent);
+
+          parsedLines.push({
+            id: idx++,
+            startTime,
+            endTime: null,
+            origText: didactic.mainText,
+            literalText: didactic.spanish || '',
+            adaptedText: '',
+            notes: didactic.note || ''
+          });
+        }
+      }
+
+      // Compute missing end times
+      for (let i = 0; i < parsedLines.length; i++) {
+        if (parsedLines[i].endTime === null) {
+          if (i < parsedLines.length - 1 && parsedLines[i + 1].startTime !== null) {
+            parsedLines[i].endTime = Math.max(parsedLines[i].startTime + 0.5, parsedLines[i + 1].startTime - 0.1);
+          } else {
+            parsedLines[i].endTime = parsedLines[i].startTime + 3.5;
+          }
+        }
+      }
+
+      state.lines = parsedLines;
+      renderWorkbench();
+      selectLine(0);
+    }
+
+    function parseDidacticContent(str) {
+      let mainText = str;
+      let spanish = '';
+      let note = '';
+
+      const esMatch = /<small class="es">(.*?)<\/small>/i.exec(str);
+      if (esMatch) {
+        spanish = esMatch[1];
+        mainText = mainText.replace(esMatch[0], '');
+      }
+
+      const noteMatch = /<span class="note">(.*?)<\/span>/i.exec(str);
+      if (noteMatch) {
+        note = noteMatch[1];
+        mainText = mainText.replace(noteMatch[0], '');
+      }
+
+      // Clean other tags
+      mainText = mainText.replace(/<span class="pron">(.*?)<\/span>/gi, '');
+      mainText = mainText.replace(/<br\s*[\/]?>/gi, ' ').trim();
+
+      return { mainText, spanish, note };
+    }
+
+    // === RENDER WORKBENCH ===
+    function renderWorkbench() {
+      const container = document.getElementById('lines-list');
+      container.innerHTML = '';
+
+      if (state.lines.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🎼</div>
+            <h3 class="empty-title">No hay frases cargadas</h3>
+            <p class="empty-desc">Carga una canción demo arriba o importa tu archivo .LRC y audio para empezar a crear la adaptación al español.</p>
+            <button class="btn btn-primary" onclick="openImportModal()">Cargar Archivo LRC</button>
+          </div>
+        `;
+        return;
+      }
+
+      state.lines.forEach((line, index) => {
+        const enSyllables = countEnglishSyllables(line.origText);
+        const esSyllables = countSpanishSyllables(line.adaptedText);
+        const diff = esSyllables > 0 ? (esSyllables - enSyllables) : 0;
+
+        let statusClass = 'exact';
+        let statusText = '🎯 Encaje perfecto';
+        if (esSyllables === 0) {
+          statusClass = 'near';
+          statusText = `Original: ${enSyllables} síl.`;
+        } else if (diff === 0) {
+          statusClass = 'exact';
+          statusText = `🎯 ${esSyllables} / ${enSyllables} síl. (Exacto)`;
+        } else if (Math.abs(diff) === 1) {
+          statusClass = 'near';
+          statusText = `⚡ ${esSyllables} / ${enSyllables} (${diff > 0 ? '+1' : '-1'} síl.)`;
+        } else {
+          statusClass = 'far';
+          statusText = `⚠️ ${esSyllables} / ${enSyllables} (${diff > 0 ? '+' + diff : diff} síl.)`;
+        }
+
+        const rhymeEnding = getSpanishRhymeEnding(line.adaptedText);
+
+        const card = document.createElement('div');
+        card.className = `line-card ${index === state.activeLineIndex ? 'active' : ''}`;
+        card.id = `line-card-${index}`;
+        card.onclick = (e) => {
+          if (!['TEXTAREA', 'BUTTON', 'INPUT'].includes(e.target.tagName)) {
+            selectLine(index);
+          }
+        };
+
+        card.innerHTML = `
+          <!-- COL 1: ORIGINAL (EN) -->
+          <div class="col-orig">
+            <div class="col-orig-header">
+              <span class="line-idx-tag">#${line.id}</span>
+              <button class="line-timestamp-btn" onclick="seekToLine(${index})" title="Saltar a este segundo">
+                ▶ ${formatTime(line.startTime)}
+              </button>
+            </div>
+            <div class="orig-text">${escapeHtml(line.origText)}</div>
+            <div class="orig-meta-row">
+              <button class="btn-line-action" onclick="playSingleLine(${index})" title="Escuchar esta frase una sola vez">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Oír
+              </button>
+              <button class="btn-line-action ${state.isLoopingActiveLine && state.activeLineIndex === index ? 'active-loop' : ''}" id="btn-loop-line-${index}" onclick="loopLineDirect(${index})" title="Poner esta frase en bucle continuo">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+                Bucle
+              </button>
+              <span class="syllable-count-badge">${enSyllables} síl. (EN)</span>
+            </div>
+          </div>
+
+          <!-- COL 2: TRADUCCIÓN LITERAL (GUÍA) -->
+          <div class="col-literal">
+            <textarea class="literal-textarea" id="literal-input-${index}" placeholder="Traducción literal para guiarte en el significado..." oninput="updateLiteral(${index}, this.value)" onfocus="selectLine(${index})">${escapeHtml(line.literalText)}</textarea>
+            <div class="literal-tools-row">
+              <button class="btn-mini-tool" onclick="autoTranslateLine(${index})">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/></svg>
+                Sugerir Traducción
+              </button>
+              ${line.notes ? `<span style="font-size:0.7rem; color:var(--muted); font-style:italic;">${escapeHtml(line.notes.slice(0, 35))}...</span>` : ''}
+            </div>
+          </div>
+
+          <!-- COL 3: ADAPTACIÓN EN ESPAÑOL -->
+          <div class="col-adapt">
+            <textarea class="adapt-textarea" id="adapt-input-${index}" placeholder="Escribe aquí tu adaptación en español..." oninput="updateAdapted(${index}, this.value)" onfocus="selectLine(${index})">${escapeHtml(line.adaptedText)}</textarea>
+            <div class="adapt-meta-row">
+              <span class="metric-status-tag ${statusClass}" id="metric-tag-${index}">
+                ${statusText}
+              </span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                ${rhymeEnding ? `<span class="rhyme-tag" id="rhyme-tag-${index}" title="Terminación de rima">-${rhymeEnding}</span>` : ''}
+                <button class="btn-rhyme-helper" onclick="openRhymeModalForLine(${index})">
+                  ✨ Rimas
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // === SELECTION & PLAYBACK ACTIONS ===
+    function selectLine(index) {
+      if (index < 0 || index >= state.lines.length) return;
+      state.activeLineIndex = index;
+      const line = state.lines[index];
+
+      // Update dock
+      document.getElementById('dock-line-num').innerText = `Línea ${line.id}`;
+      document.getElementById('dock-line-time').innerText = formatTime(line.startTime);
+      document.getElementById('dock-focus-orig').innerText = line.origText || '(Instrumental)';
+      document.getElementById('dock-focus-adapted').innerText = line.adaptedText || '(Escribe tu adaptación...)';
+
+      // Update metric badge in dock
+      const enSyllables = countEnglishSyllables(line.origText);
+      const esSyllables = countSpanishSyllables(line.adaptedText);
+      const metricPill = document.getElementById('dock-metric-indicator');
+
+      if (esSyllables === 0) {
+        metricPill.className = 'metric-comparison-pill metric-warning';
+        metricPill.innerText = `Meta: ${enSyllables} sílabas`;
+      } else if (enSyllables === esSyllables) {
+        metricPill.className = 'metric-comparison-pill metric-match';
+        metricPill.innerText = `🎯 ${esSyllables} / ${enSyllables} síl. (Perfecto)`;
+      } else if (Math.abs(enSyllables - esSyllables) === 1) {
+        metricPill.className = 'metric-comparison-pill metric-warning';
+        metricPill.innerText = `⚡ ${esSyllables} / ${enSyllables} síl. (±1)`;
+      } else {
+        metricPill.className = 'metric-comparison-pill metric-alert';
+        metricPill.innerText = `⚠️ ${esSyllables} / ${enSyllables} síl.`;
+      }
+
+      // Highlight active card
+      document.querySelectorAll('.line-card').forEach((c, i) => {
+        c.classList.toggle('active', i === index);
+      });
+
+      // Update loop segment on timeline
+      updateTimelineLoopSegment();
+    }
+
+    function rehearCurrentLine() {
+      if (state.lines.length === 0) return;
+      const line = state.lines[state.activeLineIndex];
+      if (!line) return;
+
+      audio.currentTime = Math.max(0, line.startTime - state.loopPaddingStart);
+      audio.play();
+      showToast(`Escuchando línea #${line.id} 🎧`);
+    }
+
+    function playSingleLine(index) {
+      selectLine(index);
+      rehearCurrentLine();
+    }
+
+    function toggleLoopCurrentLine() {
+      state.isLoopingActiveLine = !state.isLoopingActiveLine;
+      const loopBtn = document.getElementById('btn-dock-loop');
+      const loopText = document.getElementById('btn-loop-text');
+
+      if (state.isLoopingActiveLine) {
+        loopBtn.classList.add('active');
+        loopText.innerText = 'Bucle Activado';
+        const activeCard = document.getElementById(`line-card-${state.activeLineIndex}`);
+        if (activeCard) activeCard.classList.add('is-looping');
+
+        // Start playback
+        rehearCurrentLine();
+        showToast('Bucle continuo activado: ¡Canta y ajusta tu letra! 🔁');
+      } else {
+        loopBtn.classList.remove('active');
+        loopText.innerText = 'Bucle de Línea';
+        document.querySelectorAll('.line-card').forEach(c => c.classList.remove('is-looping'));
+        showToast('Bucle desactivado');
+      }
+
+      updateTimelineLoopSegment();
+    }
+
+    function loopLineDirect(index) {
+      selectLine(index);
+      if (!state.isLoopingActiveLine) {
+        toggleLoopCurrentLine();
+      } else {
+        rehearCurrentLine();
+      }
+    }
+
+    function updateTimelineLoopSegment() {
+      const seg = document.getElementById('timeline-loop-segment');
+      if (!state.isLoopingActiveLine || state.lines.length === 0 || !audio.duration) {
+        seg.style.display = 'none';
+        return;
+      }
+
+      const line = state.lines[state.activeLineIndex];
+      const start = Math.max(0, line.startTime - state.loopPaddingStart);
+      const end = (line.endTime || line.startTime + 3.5) + state.loopPaddingEnd;
+
+      const dur = audio.duration;
+      const leftPct = (start / dur) * 100;
+      const widthPct = ((end - start) / dur) * 100;
+
+      seg.style.display = 'block';
+      seg.style.left = `${leftPct}%`;
+      seg.style.width = `${widthPct}%`;
+    }
+
+    function seekToLine(index) {
+      selectLine(index);
+      const line = state.lines[index];
+      audio.currentTime = Math.max(0, line.startTime);
+      audio.play();
+    }
+
+    function prevLine() {
+      if (state.activeLineIndex > 0) {
+        selectLine(state.activeLineIndex - 1);
+        if (state.isLoopingActiveLine || state.isPlaying) {
+          rehearCurrentLine();
+        }
+        scrollToActiveLine();
+      }
+    }
+
+    function nextLine() {
+      if (state.activeLineIndex < state.lines.length - 1) {
+        selectLine(state.activeLineIndex + 1);
+        if (state.isLoopingActiveLine || state.isPlaying) {
+          rehearCurrentLine();
+        }
+        scrollToActiveLine();
+      }
+    }
+
+    function scrollToActiveLine() {
+      const card = document.getElementById(`line-card-${state.activeLineIndex}`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function togglePlay() {
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    }
+
+    function changePlaybackSpeed(speed) {
+      state.playbackRate = parseFloat(speed);
+      audio.playbackRate = state.playbackRate;
+      showToast(`Velocidad: ${speed}x`);
+    }
+
+    function seekByTimeline(e) {
+      const wrap = document.getElementById('timeline-wrap');
+      const rect = wrap.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const pct = Math.max(0, Math.min(1, clickX / rect.width));
+      if (audio.duration) {
+        audio.currentTime = pct * audio.duration;
+      }
+    }
+
+    function trackActiveLineByTime(time) {
+      if (state.isLoopingActiveLine) return;
+      for (let i = 0; i < state.lines.length; i++) {
+        const l = state.lines[i];
+        if (time >= l.startTime && time < (l.endTime || l.startTime + 4)) {
+          if (state.activeLineIndex !== i) {
+            selectLine(i);
+          }
+          break;
+        }
+      }
+    }
+
+    // === EDITING & SYLLABLE UPDATES ===
+    function updateLiteral(index, val) {
+      if (state.lines[index]) {
+        state.lines[index].literalText = val;
+      }
+    }
+
+    function updateAdapted(index, val) {
+      if (!state.lines[index]) return;
+      state.lines[index].adaptedText = val;
+
+      const enSyllables = countEnglishSyllables(state.lines[index].origText);
+      const esSyllables = countSpanishSyllables(val);
+      const diff = esSyllables > 0 ? (esSyllables - enSyllables) : 0;
+
+      // Update card metric tag
+      const tag = document.getElementById(`metric-tag-${index}`);
+      if (tag) {
+        if (esSyllables === 0) {
+          tag.className = 'metric-status-tag near';
+          tag.innerText = `Original: ${enSyllables} síl.`;
+        } else if (diff === 0) {
+          tag.className = 'metric-status-tag exact';
+          tag.innerText = `🎯 ${esSyllables} / ${enSyllables} síl. (Exacto)`;
+        } else if (Math.abs(diff) === 1) {
+          tag.className = 'metric-status-tag near';
+          tag.innerText = `⚡ ${esSyllables} / ${enSyllables} (${diff > 0 ? '+1' : '-1'} síl.)`;
+        } else {
+          tag.className = 'metric-status-tag far';
+          tag.innerText = `⚠️ ${esSyllables} / ${enSyllables} (${diff > 0 ? '+' + diff : diff} síl.)`;
+        }
+      }
+
+      // Update rhyme tag
+      const rhymeEnding = getSpanishRhymeEnding(val);
+      const rhymeTag = document.getElementById(`rhyme-tag-${index}`);
+      if (rhymeTag) {
+        if (rhymeEnding) {
+          rhymeTag.style.display = 'inline-block';
+          rhymeTag.innerText = `-${rhymeEnding}`;
+        } else {
+          rhymeTag.style.display = 'none';
+        }
+      }
+
+      // If active, update dock
+      if (state.activeLineIndex === index) {
+        document.getElementById('dock-focus-adapted').innerText = val || '(Escribe tu adaptación...)';
+        const metricPill = document.getElementById('dock-metric-indicator');
+        if (esSyllables === 0) {
+          metricPill.className = 'metric-comparison-pill metric-warning';
+          metricPill.innerText = `Meta: ${enSyllables} sílabas`;
+        } else if (diff === 0) {
+          metricPill.className = 'metric-comparison-pill metric-match';
+          metricPill.innerText = `🎯 ${esSyllables} / ${enSyllables} síl. (Perfecto)`;
+        } else if (Math.abs(diff) === 1) {
+          metricPill.className = 'metric-comparison-pill metric-warning';
+          metricPill.innerText = `⚡ ${esSyllables} / ${enSyllables} síl. (±1)`;
+        } else {
+          metricPill.className = 'metric-comparison-pill metric-alert';
+          metricPill.innerText = `⚠️ ${esSyllables} / ${enSyllables} síl.`;
+        }
+      }
+    }
+
+    // Auto-translation helper using client dictionary or free public endpoint
+    async function autoTranslateLine(index) {
+      const line = state.lines[index];
+      if (!line || !line.origText) return;
+
+      showToast('Generando sugerencia literal...');
+      try {
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(line.origText)}&langpair=en|es`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data && data.responseData && data.responseData.translatedText) {
+          const trans = data.responseData.translatedText;
+          line.literalText = trans;
+          const textarea = document.getElementById(`literal-input-${index}`);
+          if (textarea) textarea.value = trans;
+          showToast('Traducción literal sugerida con éxito ✨');
+          return;
+        }
+      } catch (e) {
+        console.warn('API translation failed, fallback to basic dictionary', e);
+      }
+
+      // Fallback
+      showToast('Ingresa la traducción literal manualmente en el campo');
+    }
+
+    // === RHYME SEARCH MODAL ===
+    function openRhymeModalForLine(index) {
+      selectLine(index);
+      const line = state.lines[index];
+      const searchInput = document.getElementById('rhyme-search-input');
+      const lastWord = (line.adaptedText || line.literalText || '').trim().split(/\s+/).pop();
+      if (lastWord) {
+        searchInput.value = lastWord.replace(/[^a-záéíóúüñ]/gi, '');
+        searchRhymes();
+      }
+      document.getElementById('modal-rhyme').classList.add('open');
+    }
+
+    function closeRhymeModal() {
+      document.getElementById('modal-rhyme').classList.remove('open');
+    }
+
+    function searchRhymes() {
+      const query = document.getElementById('rhyme-search-input').value.trim().toLowerCase();
+      const container = document.getElementById('rhyme-results-cloud');
+      container.innerHTML = '';
+
+      if (!query) {
+        container.innerHTML = '<span style="color:var(--muted); font-size:0.8rem;">Escribe una palabra para buscar rimas.</span>';
+        return;
+      }
+
+      const ending = getSpanishRhymeEnding(query);
+      let matches = [];
+
+      // Look up in dictionary
+      for (const [key, words] of Object.entries(RHYME_DB)) {
+        if (query.endsWith(key) || key.endsWith(ending) || ending.endsWith(key)) {
+          matches.push(...words);
+        }
+      }
+
+      // Generic matches based on ending letters
+      if (matches.length === 0) {
+        matches = ['amor', 'dolor', 'cantar', 'llorar', 'corazón', 'razón', 'vida', 'herida', 'salida', 'volver', 'perder', 'vencer'];
+      }
+
+      // Deduplicate and filter out query itself
+      const unique = [...new Set(matches)].filter(w => w !== query);
+
+      unique.forEach(w => {
+        const pill = document.createElement('span');
+        pill.className = 'rhyme-word-pill';
+        pill.innerText = w;
+        pill.onclick = () => insertRhymeWord(w);
+        container.appendChild(pill);
+      });
+    }
+
+    function insertRhymeWord(word) {
+      const index = state.activeLineIndex;
+      const textarea = document.getElementById(`adapt-input-${index}`);
+      if (textarea) {
+        const current = textarea.value.trim();
+        textarea.value = current ? `${current} ${word}` : word;
+        updateAdapted(index, textarea.value);
+        closeRhymeModal();
+        showToast(`Palabra "${word}" agregada a la línea #${state.lines[index].id} ✍️`);
+      }
+    }
+
+    // === FULLSCREEN KARAOKE / SINGING MODE ===
+    function openKaraokeMode() {
+      if (state.lines.length === 0) {
+        showToast('Carga primero una canción para cantar');
+        return;
+      }
+      document.getElementById('karaoke-screen').classList.add('open');
+      updateKaraokeDisplay();
+
+      // Listen to timeupdate to sync karaoke lyrics
+      audio.addEventListener('timeupdate', updateKaraokeDisplay);
+    }
+
+    function closeKaraokeMode() {
+      document.getElementById('karaoke-screen').classList.remove('open');
+      audio.removeEventListener('timeupdate', updateKaraokeDisplay);
+    }
+
+    function updateKaraokeDisplay() {
+      if (!document.getElementById('karaoke-screen').classList.contains('open')) return;
+
+      const idx = state.activeLineIndex;
+      const cur = state.lines[idx] || {};
+      const prev = state.lines[idx - 1] || {};
+      const next = state.lines[idx + 1] || {};
+
+      document.getElementById('karaoke-prev').innerText = prev.adaptedText || prev.origText || '';
+      document.getElementById('karaoke-orig').innerText = cur.origText || '';
+      document.getElementById('karaoke-adapted').innerText = cur.adaptedText || '(Sin adaptación aún - canta libre)';
+      document.getElementById('karaoke-literal').innerText = cur.literalText ? `Significado: ${cur.literalText}` : '';
+      document.getElementById('karaoke-next').innerText = next.adaptedText || next.origText || '';
+    }
+
+    // === IMPORT & EXPORT HANDLERS ===
+    function openImportModal() {
+      document.getElementById('modal-import').classList.add('open');
+    }
+
+    function closeImportModal() {
+      document.getElementById('modal-import').classList.remove('open');
+    }
+
+    function openExportModal() {
+      document.getElementById('modal-export').classList.add('open');
+    }
+
+    function closeExportModal() {
+      document.getElementById('modal-export').classList.remove('open');
+    }
+
+    function processImport() {
+      const audioInput = document.getElementById('input-audio-file');
+      const lrcInput = document.getElementById('input-lrc-file');
+      const pasteText = document.getElementById('paste-lrc-text').value.trim();
+
+      // Audio file
+      if (audioInput.files && audioInput.files[0]) {
+        const file = audioInput.files[0];
+        const audioUrl = URL.createObjectURL(file);
+        audio.src = audioUrl;
+        state.audioSrc = audioUrl;
+        state.songTitle = file.name.replace(/\.[^/.]+$/, "");
+        document.getElementById('song-title-display').innerText = state.songTitle;
+      }
+
+      // LRC file or text
+      if (lrcInput.files && lrcInput.files[0]) {
+        const file = lrcInput.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          parseAndSetLRC(e.target.result, file.name.replace(/\.lrc$/i, ''));
+          closeImportModal();
+          showToast('Canción y LRC cargados exitosamente 🚀');
+        };
+        reader.readAsText(file);
+        return;
+      } else if (pasteText) {
+        parseAndSetLRC(pasteText, state.songTitle || 'Letra Importada');
+        closeImportModal();
+        showToast('LRC procesado exitosamente 🚀');
+        return;
+      }
+
+      closeImportModal();
+    }
+
+    // Export Spanish LRC
+    function downloadSpanishLRC() {
+      if (state.lines.length === 0) {
+        showToast('No hay líneas para exportar');
+        return;
+      }
+
+      let content = `[ti:${state.songTitle} (Adaptación al Español)]\n[by:Adaptado con Estudio de Adaptación Musical Micha]\n\n`;
+      state.lines.forEach(l => {
+        const text = l.adaptedText.trim() || l.origText;
+        content += `[${formatTime(l.startTime)}] ${text}\n`;
+      });
+
+      downloadFile(content, `${state.songTitle}_adaptacion_espanol.lrc`, 'text/plain;charset=utf-8');
+      showToast('¡Archivo .LRC en Español descargado! 💾');
+    }
+
+    // Export Full Script TXT
+    function downloadFullScript() {
+      if (state.lines.length === 0) return;
+
+      let content = `========================================================\n`;
+      content += `GUION DE ADAPTACIÓN MUSICAL: ${state.songTitle}\n`;
+      content += `Generado en el Estudio de Adaptación Musical\n`;
+      content += `========================================================\n\n`;
+
+      state.lines.forEach(l => {
+        const enSyl = countEnglishSyllables(l.origText);
+        const esSyl = countSpanishSyllables(l.adaptedText);
+        content += `[${formatTime(l.startTime)} - Línea #${l.id}]\n`;
+        content += `  ORIGINAL (EN) [${enSyl} síl.]: ${l.origText}\n`;
+        content += `  LITERAL (GUÍA):            ${l.literalText || '-'}\n`;
+        content += `  ADAPTACIÓN (ES) [${esSyl} síl.]: ${l.adaptedText || '(Pendiente)'}\n`;
+        if (l.notes) content += `  NOTAS:                     ${l.notes}\n`;
+        content += `--------------------------------------------------------\n`;
+      });
+
+      downloadFile(content, `${state.songTitle}_guion_adaptacion.txt`, 'text/plain;charset=utf-8');
+      showToast('¡Guion completo descargado! 📑');
+    }
+
+    function copyAdaptedLyrics() {
+      const text = state.lines.map(l => l.adaptedText.trim() || l.origText).join('\n');
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Letra adaptada copiada al portapapeles 📋');
+      });
+    }
+
+    function copyFullLRC() {
+      let content = `[ti:${state.songTitle} (Adaptación Español)]\n\n`;
+      state.lines.forEach(l => {
+        content += `[${formatTime(l.startTime)}] ${l.adaptedText.trim() || l.origText}\n`;
+      });
+      navigator.clipboard.writeText(content).then(() => {
+        showToast('LRC completo copiado al portapapeles 📋');
+      });
+    }
+
+    function testInPlayer() {
+      const testLrc = state.lines.map(l => {
+        return `[${formatTime(l.startTime)}-${formatTime(l.endTime)}]${l.adaptedText.trim() || l.origText}<br><small class="es">Original: ${l.origText}</small>`;
+      }).join('\n');
+
+      localStorage.setItem('custom_player_lrc', testLrc);
+      window.open('player.html?song=Shawn_Mendes_Stitches', '_blank');
+      showToast('Abriendo en Reproductor de Escucha Activa 🎧');
+    }
+
+    function downloadFile(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // === KEYBOARD SHORTCUTS ===
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        // Karaoke close
+        if (e.key === 'Escape') {
+          closeKaraokeMode();
+          closeImportModal();
+          closeExportModal();
+          closeRhymeModal();
+          return;
+        }
+
+        // Replay current line: Ctrl + Space or Alt + R anywhere
+        if ((e.ctrlKey && e.code === 'Space') || (e.altKey && e.code === 'KeyR')) {
+          e.preventDefault();
+          rehearCurrentLine();
+          return;
+        }
+
+        // Toggle loop: Alt + L
+        if (e.altKey && e.code === 'KeyL') {
+          e.preventDefault();
+          toggleLoopCurrentLine();
+          return;
+        }
+
+        // Prev/Next line navigation with Alt + Up/Down
+        if (e.altKey && e.code === 'ArrowUp') {
+          e.preventDefault();
+          prevLine();
+          return;
+        }
+        if (e.altKey && e.code === 'ArrowDown') {
+          e.preventDefault();
+          nextLine();
+          return;
+        }
+
+        // If typing in input or textarea, don't trigger single-key actions
+        if (['TEXTAREA', 'INPUT'].includes(e.target.tagName)) {
+          return;
+        }
+
+        // Space: Master play/pause
+        if (e.code === 'Space') {
+          e.preventDefault();
+          togglePlay();
+        } else if (e.code === 'KeyR') {
+          e.preventDefault();
+          rehearCurrentLine();
+        } else if (e.code === 'KeyL') {
+          e.preventDefault();
+          toggleLoopCurrentLine();
+        } else if (e.code === 'ArrowUp' || e.code === 'BracketLeft') {
+          e.preventDefault();
+          prevLine();
+        } else if (e.code === 'ArrowDown' || e.code === 'BracketRight') {
+          e.preventDefault();
+          nextLine();
+        }
+      });
+    }
+
+    // === UTILITY HELPERS ===
+    function formatTime(sec) {
+      if (isNaN(sec) || sec === null || sec === undefined) return '00:00.00';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      const ms = Math.floor((sec % 1) * 100);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+    }
+
+    function parseSeconds(timeStr) {
+      const parts = timeStr.split(':');
+      if (parts.length !== 2) return null;
+      const min = parseFloat(parts[0]);
+      const sec = parseFloat(parts[1]);
+      return min * 60 + sec;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast-msg');
+      t.innerText = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+  </script>
+</body>
+</html>
