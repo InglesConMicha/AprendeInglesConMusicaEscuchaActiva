@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Interactivo — Love Me Not (Ravyn Lenae) 🎵</title>
+  <meta name="description" content="Aprende y pon a prueba tu inglés con la canción Love Me Not de Ravyn Lenae. Vocabulario, modismos, phrasal verbs, subjuntivo y pronunciación.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c084fc' stroke-width='2.5'%3E%3Cpath d='M9 18V5l12-2v13'%3E%3C/path%3E%3Ccircle cx='6' cy='18' r='3' fill='%23c084fc'%3E%3C/circle%3E%3Ccircle cx='18' cy='16' r='3' fill='%23f472b6'%3E%3C/circle%3E%3C/svg%3E">
+
+  <style>
+    :root {
+      --bg-color: #080512;
+      --bg-gradient: linear-gradient(135deg, #06030e 0%, #170a2c 50%, #2a0b28 100%);
+      --card-bg: rgba(22, 14, 38, 0.82);
+      --card-border: rgba(192, 132, 252, 0.2);
+      --accent-primary: #c084fc;
+      --accent-secondary: #f472b6;
+      --accent-cyan: #38bdf8;
+      --accent-success: #34d399;
+      --accent-error: #f87171;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.2s ease; }
+
+    body {
+      font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      background: var(--bg-color);
+      background-image: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    .glow-spot {
+      position: fixed;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(120px);
+      opacity: 0.18;
+      z-index: 0;
+    }
+    .glow-1 { top: -100px; left: -100px; background: #c084fc; }
+    .glow-2 { bottom: -100px; right: -100px; background: #f472b6; }
+
+    .app-container {
+      width: 100%;
+      max-width: 680px;
+      background: var(--card-bg);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(192, 132, 252, 0.1);
+      position: relative;
+      z-index: 1;
+    }
+
+    .song-badge {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .song-thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      border: 1px solid rgba(192, 132, 252, 0.35);
+    }
+
+    .song-info h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .song-info p {
+      font-size: 0.85rem;
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    .progress-bar-wrap {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      margin-bottom: 22px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #c084fc, #f472b6);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .question-category {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-secondary);
+      background: rgba(244, 114, 182, 0.12);
+      border: 1px solid rgba(244, 114, 182, 0.25);
+      padding: 4px 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .question-text {
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 14px;
+    }
+
+    .question-context {
+      background: rgba(0, 0, 0, 0.35);
+      border-left: 3px solid var(--accent-primary);
+      padding: 10px 14px;
+      border-radius: 0 10px 10px 0;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      font-style: italic;
+      margin-bottom: 22px;
+    }
+
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .option-btn {
+      width: 100%;
+      text-align: left;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.94rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: rgba(192, 132, 252, 0.12);
+      border-color: rgba(192, 132, 252, 0.4);
+      transform: translateX(4px);
+    }
+
+    .option-btn.correct {
+      background: rgba(52, 211, 153, 0.18) !important;
+      border-color: #34d399 !important;
+      color: #34d399 !important;
+      font-weight: 700;
+    }
+
+    .option-btn.incorrect {
+      background: rgba(248, 113, 113, 0.18) !important;
+      border-color: #f87171 !important;
+      color: #f87171 !important;
+    }
+
+    .explanation-box {
+      display: none;
+      background: rgba(192, 132, 252, 0.08);
+      border: 1px solid rgba(192, 132, 252, 0.25);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 22px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: #e2e8f0;
+    }
+
+    .explanation-box.show { display: block; }
+
+    .btn-next {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 4px 16px rgba(236, 72, 153, 0.35);
+    }
+
+    .btn-next.show { display: block; }
+
+    .result-card {
+      text-align: center;
+      display: none;
+    }
+
+    .result-score {
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: var(--accent-primary);
+      margin: 14px 0;
+    }
+
+    .nav-back-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      text-align: center;
+      font-size: 0.88rem;
+      display: inline-block;
+    }
+
+    .btn-restart {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-home {
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-spot glow-1"></div>
+  <div class="glow-spot glow-2"></div>
+
+  <div class="app-container">
+    <div class="song-badge">
+      <img src="cover.svg" alt="Love Me Not" class="song-thumb">
+      <div class="song-info">
+        <h1>Love Me Not</h1>
+        <p>Ravyn Lenae · Quiz Interactivo de Comprensión</p>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <!-- QUIZ VIEW -->
+    <div id="quiz-view">
+      <span class="question-category" id="q-category">Vocabulario & Slang</span>
+      <h2 class="question-text" id="q-text">Cargando pregunta...</h2>
+      <div class="question-context" id="q-context">...</div>
+
+      <div class="options-grid" id="options-grid"></div>
+
+      <div class="explanation-box" id="explanation-box"></div>
+
+      <button class="btn-next" id="btn-next" onclick="nextQuestion()">Siguiente Pregunta &rarr;</button>
+    </div>
+
+    <!-- RESULT VIEW -->
+    <div class="result-card" id="result-view">
+      <div style="font-size: 3rem;">🎉</div>
+      <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 8px;">¡Quiz Completado!</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Has puesto a prueba tu oído y gramática con Ravyn Lenae.</p>
+      <div class="result-score" id="final-score">0 / 0</div>
+      <p id="feedback-msg" style="font-size: 1rem; font-weight: 600; color: #e2e8f0; margin-bottom: 24px;"></p>
+
+      <div class="nav-back-row">
+        <button class="btn-action btn-restart" onclick="restartQuiz()">🔄 Repetir Quiz</button>
+        <a href="../../index.html" class="btn-action btn-home">🏠 Volver al Inicio</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        category: 'Modismos & Slang',
+        question: '¿Qué significa la expresión "strung out" en la canción?',
+        context: '"I need you right now, once I leave you I\'m strung out"',
+        options: [
+          'Con mucha energía y ganas de salir a bailar',
+          'Emocionalmente exhausta, ansiosa o con síndrome de abstinencia emocional',
+          'Atrapada en el tráfico de la ciudad',
+          'Haciendo ejercicios con cuerdas elásticas'
+        ],
+        correctIndex: 1,
+        explanation: '<b>"Strung out"</b> proviene originalmente de la abstinencia física, pero en relaciones y canciones expresa ese estado de angustia, desgaste y ansiedad profunda cuando te separas de alguien a quien estás apegado.'
+      },
+      {
+        category: 'Phrasal Verbs',
+        question: '¿Qué expresa el phrasal verb "break down" en este contexto?',
+        context: '"If I get you, I\'m slowly breaking down"',
+        options: [
+          'Derrumbarse o colapsar emocionalmente poco a poco',
+          'Desarmar un motor de automóvil paso a paso',
+          'Bailar breakdance en una fiesta',
+          'Dividir una cuenta de restaurante entre dos personas'
+        ],
+        correctIndex: 0,
+        explanation: '<b>"Break down"</b> significa desmoronarse o perder el control emocional frente a una situación de estrés o conflicto sentimental.'
+      },
+      {
+        category: 'Gramática · Subjuntivo',
+        question: '¿Por qué se usa "were" con "I wish you were" en vez de "was"?',
+        context: '"And, oh, it\'s hard to see you, but I wish you were right here"',
+        options: [
+          'Es un error gramatical común en canciones populares',
+          'Porque después de "wish" se usa el subjuntivo para desear situaciones hipotéticas presentes',
+          'Porque "you" siempre lleva "were", sin importar el tiempo verbal',
+          'Porque se refiere a una acción del futuro lejano'
+        ],
+        correctIndex: 1,
+        explanation: 'En inglés formal y poético, la estructura <b>"wish + past subjunctive (were)"</b> se utiliza para expresar deseos contrarios a la realidad actual ("desearía que estuvieras aquí").'
+      },
+      {
+        category: 'Cultura & Juegos Populares',
+        question: '¿A qué tradición popular alude la frase "He love me not, he loves me"?',
+        context: '"He love me not, he loves me / He holds me tight, then lets me go"',
+        options: [
+          'A lanzar una moneda al aire para tomar decisiones',
+          'Al juego infantil de deshojar los pétalos de una margarita para saber si alguien te ama',
+          'A un refrán marinero sobre las olas del océano',
+          'A una partida de cartas de adivinación del tarot'
+        ],
+        correctIndex: 1,
+        explanation: 'En inglés, el juego de deshojar margaritas diciendo "me quiere, no me quiere" se dice <b>"He loves me, he loves me not"</b>. Ravyn Lenae lo usa como metáfora de la montaña rusa afectiva.'
+      },
+      {
+        category: 'Vocabulario & Colocaciones',
+        question: '¿Qué significa "I fiend for your affection"?',
+        context: '"It\'s gettin\' messy, I fiend for your affection"',
+        options: [
+          'Rechazo por completo tus abrazos',
+          'Anhelo o deseo compulsivamente tu cariño (como una adicción)',
+          'Finges sentir cariño por compromiso',
+          'Te ofrezco mi amistad sincera'
+        ],
+        correctIndex: 1,
+        explanation: 'El verbo slang <b>"to fiend for something"</b> describe una necesidad o ansia irresistible e intensa por algo (similar a "crave intensely").'
+      },
+      {
+        category: 'Phrasal Verbs',
+        question: '¿Cuál es el significado de "get back together"?',
+        context: '"Now, forever, let\'s get back together"',
+        options: [
+          'Volver a juntarse o reconciliarse como pareja tras separarse',
+          'Reunirse únicamente para una reunión de negocios',
+          'Recuperar objetos perdidos en la calle',
+          'Viajar juntos de regreso en el tren'
+        ],
+        correctIndex: 0,
+        explanation: '<b>"Get back together"</b> es el modismo en inglés para retomar una relación amorosa rota: volver a estar juntos / reconciliarse.'
+      }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let answered = false;
+
+    function renderQuestion() {
+      answered = false;
+      const q = questions[currentQ];
+      document.getElementById('q-category').innerText = q.category;
+      document.getElementById('q-text').innerText = q.question;
+      document.getElementById('q-context').innerText = q.context;
+
+      const pct = (currentQ / questions.length) * 100;
+      document.getElementById('progress-bar').style.width = `${pct}%`;
+
+      const grid = document.getElementById('options-grid');
+      grid.innerHTML = '';
+      document.getElementById('explanation-box').className = 'explanation-box';
+      document.getElementById('btn-next').className = 'btn-next';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<span style="opacity:0.6; font-family:'Fira Code',monospace;">${String.fromCharCode(65 + idx)}.</span> <span>${opt}</span>`;
+        btn.onclick = () => selectOption(idx);
+        grid.appendChild(btn);
+      });
+    }
+
+    function selectOption(idx) {
+      if (answered) return;
+      answered = true;
+      const q = questions[currentQ];
+      const buttons = document.querySelectorAll('.option-btn');
+
+      buttons.forEach((b, i) => {
+        b.disabled = true;
+        if (i === q.correctIndex) {
+          b.classList.add('correct');
+        } else if (i === idx) {
+          b.classList.add('incorrect');
+        }
+      });
+
+      if (idx === q.correctIndex) {
+        score++;
+      }
+
+      const exp = document.getElementById('explanation-box');
+      exp.innerHTML = q.explanation;
+      exp.classList.add('show');
+
+      const nextBtn = document.getElementById('btn-next');
+      nextBtn.classList.add('show');
+    }
+
+    function nextQuestion() {
+      currentQ++;
+      if (currentQ < questions.length) {
+        renderQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('progress-bar').style.width = '100%';
+      document.getElementById('quiz-view').style.display = 'none';
+      const res = document.getElementById('result-view');
+      res.style.display = 'block';
+
+      document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+      const msg = document.getElementById('feedback-msg');
+      if (score === questions.length) {
+        msg.innerText = '🌟 ¡Puntuación perfecta! Tienes un oído impecable para la música y el inglés lírico.';
+      } else if (score >= questions.length / 2) {
+        msg.innerText = '👏 ¡Gran trabajo! Comprendes muy bien los modismos y el sentido de la canción.';
+      } else {
+        msg.innerText = '💡 ¡Buen intento! Repasa la letra y las notas en la suite de Escucha Activa para afinar el oído.';
+      }
+    }
+
+    function restartQuiz() {
+      currentQ = 0;
+      score = 0;
+      document.getElementById('quiz-view').style.display = 'block';
+      document.getElementById('result-view').style.display = 'none';
+      renderQuestion();
+    }
+
+    window.addEventListener('DOMContentLoaded', renderQuestion);
+  </script>
+</body>
+</html>
