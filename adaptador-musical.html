@@ -1549,7 +1549,9 @@
       ravyn: {
         title: 'Ravyn Lenae — Love Me Not',
         audioCandidates: [
-          'Canciones/Ravyn_Lenae_Love_Me_Not/Ravyn Lenae - Love Me Not (Official Music Video).mp3'
+          'Canciones/Ravyn_Lenae_Love_Me_Not/Ravyn Lenae - Love Me Not SOLO VOZ.mp3',
+          'Canciones/Ravyn_Lenae_Love_Me_Not/Ravyn Lenae - Love Me Not (Official Music Video).mp3',
+          'Canciones/Ravyn_Lenae_Love_Me_Not/Ravyn Lenae - Love Me Not SOLO MUSICA.mp3'
         ],
         lrcPath: 'Canciones/Ravyn_Lenae_Love_Me_Not/letra.lrc',
         diapositivaPath: 'Canciones/Ravyn_Lenae_Love_Me_Not/diapositiva.lrc'
@@ -1812,6 +1814,8 @@
 
         // Skip metadata tags like [ti:], [ar:], [by:]
         if (/^\[(ti|ar|al|by|offset|length):/i.test(trimmed)) continue;
+        // Skip intro study slides in adaptation workbench so user focuses on lyrics
+        if (trimmed.includes('intro-slide')) continue;
 
         // Handle standard [mm:ss.xx] or range [mm:ss.xx-mm:ss.xx]
         const rangeMatch = /^\[(\d{2}:\d{2}\.\d{2})-(\d{2}:\d{2}\.\d{2})\](.*)$/.exec(trimmed);

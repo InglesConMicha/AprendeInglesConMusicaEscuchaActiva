@@ -247,6 +247,104 @@
       max-width: 600px;
     }
 
+    /* Diapositivas de Introducción & Estudio Previo */
+    .slide-card .intro-slide {
+      width: 100%;
+      max-width: 660px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: fadeInSlide 0.3s ease;
+    }
+
+    .slide-card .intro-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      flex-wrap: wrap;
+    }
+
+    .slide-card .intro-badge {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    .slide-card .intro-badge.vocab {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .slide-card .intro-badge.slang {
+      background: rgba(244, 114, 182, 0.15);
+      color: #f472b6;
+      border: 1px solid rgba(244, 114, 182, 0.35);
+    }
+
+    .slide-card .intro-badge.daily {
+      background: rgba(52, 211, 153, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.35);
+    }
+
+    .slide-card .intro-badge.warning {
+      background: rgba(248, 113, 113, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(248, 113, 113, 0.35);
+    }
+
+    .slide-card .intro-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: calc(1.2rem * var(--font-scale));
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .slide-card .intro-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-top: 4px;
+    }
+
+    .slide-card .intro-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .slide-card .intro-term-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: calc(1.02rem * var(--font-scale));
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .slide-card .intro-term-meaning {
+      font-size: calc(0.9rem * var(--font-scale));
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    .slide-card .intro-term-example {
+      font-size: calc(0.8rem * var(--font-scale));
+      color: #94a3b8;
+      font-style: italic;
+    }
+
     /* Visualizador de Audio (Waveform) */
     .visualizer-container {
       display: flex;
@@ -753,7 +851,9 @@
             `Canciones/${song}/voz.mp3`,
             `Canciones/${song}/Katy Perry - The One That Got Away SOLO VOZ.mp3`,
             `Canciones/${song}/Katy Perry - The One That Got Away ORIGINAL.mp3`,
+            `Canciones/${song}/Ravyn Lenae - Love Me Not SOLO VOZ.mp3`,
             `Canciones/${song}/Ravyn Lenae - Love Me Not (Official Music Video).mp3`,
+            `Canciones/${song}/Ravyn Lenae - Love Me Not SOLO MUSICA.mp3`,
             `Canciones/${song}/Shawn Mendes - Stitches AUDIO SIN MUSICA.mp3`,
             `Canciones/${song}/Shawn Mendes - Stitches (Lyrics).mp3`,
             `Canciones/${song}/audio.mp3`
@@ -783,6 +883,7 @@
           if (song === 'Shawn_Mendes_Stitches') cleanName = 'Shawn Mendes - Stitches';
           if (song === 'ArianaGrande_HateThatIMadeYouLoveMe') cleanName = 'Ariana Grande - Hate That I Made You Love Me';
           if (song === 'KatyPerry_TheOneThatGotAway') cleanName = 'Katy Perry - The One That Got Away';
+          if (song === 'Ravyn_Lenae_Love_Me_Not') cleanName = 'Ravyn Lenae - Love Me Not';
 
           document.querySelector('header h1').innerText = cleanName + ' 🎵';
           document.querySelector('header p').innerText = "Escucha Activa - Presiona Siguiente o Espacio para empezar";
@@ -967,9 +1068,21 @@
     visualizer.classList.remove('playing');
   });
 
+  function isIntroSlide(idx) {
+    if (idx < 0 || !slidesData[idx]) return false;
+    return typeof slidesData[idx].content === 'string' && slidesData[idx].content.includes('intro-slide');
+  }
+
   function updateCounter() {
     if (slidesData.length > 0) {
-      slideCounter.innerText = `Frase: ${currentIndex + 1}/${slidesData.length}`;
+      const totalIntros = slidesData.filter(s => s.content && s.content.includes('intro-slide')).length;
+      if (isIntroSlide(currentIndex)) {
+        slideCounter.innerText = `📖 Guía Previa: ${currentIndex + 1}/${totalIntros}`;
+      } else {
+        const songIdx = Math.max(1, currentIndex + 1 - totalIntros);
+        const totalSong = slidesData.length - totalIntros;
+        slideCounter.innerText = `Frase: ${songIdx}/${totalSong}`;
+      }
     } else {
       slideCounter.innerText = `Frase: 0/0`;
     }
@@ -980,8 +1093,8 @@
     if (currentIndex < 0 || !slidesData[currentIndex]) return;
     updateCounter();
 
-    // Si está en modo de revelación completa
-    if (isRevealed) {
+    // Si es diapositiva de estudio previo / introducción o ya está en modo revelado
+    if (isIntroSlide(currentIndex) || isRevealed) {
       slideDisplay.innerHTML = slidesData[currentIndex].content;
       return;
     }
@@ -1027,9 +1140,23 @@
     // 1. Iniciar si es el primer clic
     if (currentIndex === -1) {
       currentIndex = 0;
-      isRevealed = false;
+      isRevealed = isIntroSlide(0);
       renderScreen();
       playCurrentSnippet();
+      return;
+    }
+
+    // Si la diapositiva actual es de introducción, avanzar directamente a la siguiente
+    if (isIntroSlide(currentIndex)) {
+      if (currentIndex < slidesData.length - 1) {
+        currentIndex++;
+        isRevealed = isIntroSlide(currentIndex);
+        renderScreen();
+        playCurrentSnippet();
+      } else {
+        slideDisplay.innerHTML = `<span style="color:#4ade80; font-size:1.3rem; font-weight:700;">¡Canción Completada! 🏆</span><br><span style="color:#94a3b8; font-size:0.95rem;">Has terminado todas las diapositivas de práctica.</span>`;
+        currentIndex = -1;
+      }
       return;
     }
 
@@ -1039,11 +1166,11 @@
       renderScreen();
       playCurrentSnippet();
     } 
-    // 3. Si ya está revelado, avanzamos a la siguiente frase y la volvemos a ocultar
+    // 3. Si ya está revelado, avanzamos a la siguiente frase y la volvemos a ocultar (o mostramos si es intro)
     else {
       if (currentIndex < slidesData.length - 1) {
         currentIndex++;
-        isRevealed = false;
+        isRevealed = isIntroSlide(currentIndex);
         renderScreen();
         playCurrentSnippet();
       } else {
@@ -1090,7 +1217,7 @@
         e.preventDefault();
         if (currentIndex < slidesData.length - 1) {
           currentIndex++;
-          isRevealed = false;
+          isRevealed = isIntroSlide(currentIndex);
           renderScreen();
           playCurrentSnippet();
         }
@@ -1099,7 +1226,7 @@
         e.preventDefault();
         if (currentIndex > 0) {
           currentIndex--;
-          isRevealed = false;
+          isRevealed = isIntroSlide(currentIndex);
           renderScreen();
           playCurrentSnippet();
         }
