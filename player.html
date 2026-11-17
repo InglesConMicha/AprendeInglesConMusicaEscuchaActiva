@@ -733,8 +733,8 @@
       <button class="btn btn-toggle" id="btn-toggle-config" onclick="toggleConfigPanel()">⚙️ Configuración</button>
       <a href="index.html" class="btn" style="text-decoration: none;">🏠 Volver al Menú</a>
       <a href="voz-en-off.html" class="btn" style="text-decoration: none; color: #fca5a5; border-color: rgba(239,68,68,0.35);">🎙️ Voz en Off</a>
-      <a href="crear-lrc.html" class="btn" style="text-decoration: none; color: #38bdf8; border-color: rgba(56,189,248,0.3);">✨ Crear LRC</a>
-      <a href="adaptador-musical.html" class="btn" style="text-decoration: none; color: #c084fc; border-color: rgba(192,132,252,0.35);">🎼 Adaptador Musical</a>
+      <a href="crear-lrc.html" id="btn-nav-crear-lrc" class="btn" style="text-decoration: none; color: #38bdf8; border-color: rgba(56,189,248,0.3);">✨ Crear LRC</a>
+      <a href="adaptador-musical.html" id="btn-nav-adaptador" class="btn" style="text-decoration: none; color: #c084fc; border-color: rgba(192,132,252,0.35);">🎼 Adaptador Musical</a>
       <button class="btn btn-toggle btn-webcam" id="btn-toggle-webcam" onclick="toggleWebcam()">📷 Activar Cámara</button>
       <button class="btn btn-toggle" id="btn-toggle-fullscreen" onclick="toggleFullscreen()">📺 Pantalla Completa</button>
       <button class="btn btn-toggle btn-record" id="btn-record-screen" onclick="toggleScreenRecording()">🔴 Grabar Pantalla</button>
@@ -837,6 +837,12 @@
     const song = urlParams.get('song');
     const customAudio = urlParams.get('audio');
     if (song) {
+      // Sincronizar enlaces contextuales para Crear LRC y Adaptador Musical
+      const btnCrearLrc = document.getElementById('btn-nav-crear-lrc');
+      if (btnCrearLrc) btnCrearLrc.href = `crear-lrc.html?song=${encodeURIComponent(song)}`;
+      const btnAdaptador = document.getElementById('btn-nav-adaptador');
+      if (btnAdaptador) btnAdaptador.href = `adaptador-musical.html?song=${encodeURIComponent(song)}`;
+
       const configBtn = document.getElementById('btn-toggle-config');
       if (configBtn) configBtn.style.display = 'none';
       const configPanel = document.getElementById('config-panel');
@@ -868,6 +874,27 @@
           audio.src = candidateAudioSources[currentSourceIdx];
         }
       };
+
+      // Si se envió una adaptación desde el Adaptador Musical, probarla directamente
+      const customAdaptedLrc = localStorage.getItem('custom_player_lrc');
+      if (customAdaptedLrc) {
+        localStorage.removeItem('custom_player_lrc');
+        slidesData = parseLRC(customAdaptedLrc);
+        currentIndex = -1;
+        isRevealed = false;
+        
+        let cleanName = song.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+        if (song === 'Shawn_Mendes_Stitches') cleanName = 'Shawn Mendes - Stitches';
+        if (song === 'ArianaGrande_HateThatIMadeYouLoveMe') cleanName = 'Ariana Grande - Hate That I Made You Love Me';
+        if (song === 'KatyPerry_TheOneThatGotAway') cleanName = 'Katy Perry - The One That Got Away';
+        if (song === 'Ravyn_Lenae_Love_Me_Not') cleanName = 'Ravyn Lenae - Love Me Not';
+
+        document.querySelector('header h1').innerText = cleanName + ' (Adaptación) 🎼';
+        document.querySelector('header p').innerText = "Probando Adaptación al Español - Presiona Espacio para empezar";
+        slideDisplay.innerHTML = `<span style="color:#c084fc; font-size:1.2rem; font-weight:600;">¡Adaptación en Español cargada! 🎼</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">Pulsa <b>▶️ Siguiente</b> o la barra <b>Espaciadora</b> para probar tu letra.</span>`;
+        updateCounter();
+        return;
+      }
 
       fetch(`Canciones/${song}/diapositiva.lrc`)
         .then(response => {

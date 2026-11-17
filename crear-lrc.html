@@ -1274,7 +1274,7 @@
     </a>
 
     <div class="header-actions">
-      <a href="adaptador-musical.html" class="btn-nav" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.35); background: rgba(192, 132, 252, 0.1);">
+      <a href="adaptador-musical.html" id="btn-nav-adaptador" class="btn-nav" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.35); background: rgba(192, 132, 252, 0.1);">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 18 6-6-6-6"/><circle cx="6" cy="18" r="3" fill="#38bdf8"/><path d="M9 18V5l12-2v13"/><circle cx="18" cy="16" r="3" fill="#c084fc"/></svg>
         Adaptador Musical
       </a>
@@ -1282,11 +1282,14 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
         Voz en Off
       </a>
-      <button class="btn-nav" onclick="loadSampleProject()" title="Carga audio y letra de Shawn Mendes - Stitches para probar de inmediato">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-        Cargar Demo Stitches
-      </button>
-      <a href="player.html" class="btn-nav">
+      <select id="header-song-select" class="btn-nav" style="background: rgba(15, 23, 42, 0.85); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); font-weight: 700; cursor: pointer; outline: none;" onchange="if(this.value) loadProjectSong(this.value)">
+        <option value="">🎵 Cargar Canción del Proyecto...</option>
+        <option value="Ravyn_Lenae_Love_Me_Not">🌸 Ravyn Lenae — Love Me Not</option>
+        <option value="KatyPerry_TheOneThatGotAway">🎸 Katy Perry — The One That Got Away</option>
+        <option value="ArianaGrande_HateThatIMadeYouLoveMe">✨ Ariana Grande — Hate That I Made You</option>
+        <option value="Shawn_Mendes_Stitches">🪡 Shawn Mendes — Stitches</option>
+      </select>
+      <a href="player.html" id="btn-nav-player" class="btn-nav">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
         Abrir Reproductor
       </a>
@@ -1397,6 +1400,21 @@
           <span class="panel-badge">Paso Inicial</span>
         </div>
 
+        <!-- PROJECT SONG SHORTCUTS -->
+        <div style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+              <span>🎵</span> Cargar Canción del Proyecto:
+            </div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button type="button" class="btn-micro" onclick="loadProjectSong('Ravyn_Lenae_Love_Me_Not')" style="color: #e9d5ff; border-color: rgba(192, 132, 252, 0.45); background: rgba(192, 132, 252, 0.08);">🌸 Ravyn Lenae</button>
+              <button type="button" class="btn-micro" onclick="loadProjectSong('KatyPerry_TheOneThatGotAway')" style="color: #fef08a; border-color: rgba(251, 191, 36, 0.45); background: rgba(251, 191, 36, 0.08);">🎸 Katy Perry</button>
+              <button type="button" class="btn-micro" onclick="loadProjectSong('ArianaGrande_HateThatIMadeYouLoveMe')" style="color: #e9d5ff; border-color: rgba(168, 85, 247, 0.45); background: rgba(168, 85, 247, 0.08);">✨ Ariana Grande</button>
+              <button type="button" class="btn-micro" onclick="loadProjectSong('Shawn_Mendes_Stitches')" style="color: #bae6fd; border-color: rgba(56, 189, 248, 0.45); background: rgba(56, 189, 248, 0.08);">🪡 Shawn Mendes</button>
+            </div>
+          </div>
+        </div>
+
         <!-- AUDIO DROP ZONE -->
         <div class="drop-zone" id="audio-drop-zone" onclick="document.getElementById('audio-file-input').click()">
           <input type="file" id="audio-file-input" accept="audio/*" style="display:none;" onchange="handleAudioSelect(this.files[0])">
@@ -1430,11 +1448,11 @@
         <div class="metadata-grid">
           <div class="input-field-group">
             <label class="input-label" for="meta-title">Título de la Canción</label>
-            <input type="text" id="meta-title" class="text-input" placeholder="Ej: Stitches" value="Stitches">
+            <input type="text" id="meta-title" class="text-input" placeholder="Ej: Love Me Not" value="">
           </div>
           <div class="input-field-group">
             <label class="input-label" for="meta-artist">Artista</label>
-            <input type="text" id="meta-artist" class="text-input" placeholder="Ej: Shawn Mendes" value="Shawn Mendes">
+            <input type="text" id="meta-artist" class="text-input" placeholder="Ej: Ravyn Lenae" value="">
           </div>
         </div>
 
@@ -1448,10 +1466,10 @@
               </button>
               <input type="file" id="lrc-file-input" accept=".lrc,.txt" style="display:none;" onchange="importLrcFile(this.files[0])">
               <button class="btn-micro" onclick="cleanEmptyLines()" title="Limpiar saltos vacíos">
-                🧹 Limpiar
+                🧹 Limpiar Líneas
               </button>
-              <button class="btn-micro accent" onclick="loadSampleLyrics()">
-                ⚡ Cargar Demo
+              <button class="btn-micro" onclick="clearWorkspaceInput()" title="Borrar todo para empezar de cero">
+                🗑️ Borrar
               </button>
             </div>
           </div>
@@ -1707,8 +1725,58 @@ Sincroniza las líneas para generar el contenido aquí...</div>
   let currentActiveIndex = 0;
   let exportFormat = 'standard'; // 'standard' or 'range'
   let rightTab = 'table'; // 'table', 'karaoke', 'code'
-  let songTitle = 'Stitches';
-  let songArtist = 'Shawn Mendes';
+  let songTitle = '';
+  let songArtist = '';
+  let currentSongId = null;
+
+  // Catálogo de canciones del proyecto para sincronización automática
+  const SONG_CATALOG = {
+    'Ravyn_Lenae_Love_Me_Not': {
+      id: 'Ravyn_Lenae_Love_Me_Not',
+      title: 'Love Me Not',
+      artist: 'Ravyn Lenae',
+      audioCandidates: [
+        'Canciones/Ravyn_Lenae_Love_Me_Not/Ravyn Lenae - Love Me Not SOLO VOZ.mp3',
+        'Canciones/Ravyn_Lenae_Love_Me_Not/Ravyn Lenae - Love Me Not (Official Music Video).mp3',
+        'Canciones/Ravyn_Lenae_Love_Me_Not/Ravyn Lenae - Love Me Not SOLO MUSICA.mp3'
+      ],
+      lrcPath: 'Canciones/Ravyn_Lenae_Love_Me_Not/letra.lrc'
+    },
+    'KatyPerry_TheOneThatGotAway': {
+      id: 'KatyPerry_TheOneThatGotAway',
+      title: 'The One That Got Away',
+      artist: 'Katy Perry',
+      audioCandidates: [
+        'Canciones/KatyPerry_TheOneThatGotAway/Katy Perry - The One That Got Away ORIGINAL.mp3',
+        'Canciones/KatyPerry_TheOneThatGotAway/Katy Perry - The One That Got Away SOLO VOZ.mp3'
+      ],
+      lrcPath: 'Canciones/KatyPerry_TheOneThatGotAway/letra.lrc'
+    },
+    'ArianaGrande_HateThatIMadeYouLoveMe': {
+      id: 'ArianaGrande_HateThatIMadeYouLoveMe',
+      title: 'Hate That I Made You Love Me',
+      artist: 'Ariana Grande',
+      audioCandidates: [
+        'Canciones/ArianaGrande_HateThatIMadeYouLoveMe/voz.mp3'
+      ],
+      lrcPath: 'Canciones/ArianaGrande_HateThatIMadeYouLoveMe/letra.lrc'
+    },
+    'Shawn_Mendes_Stitches': {
+      id: 'Shawn_Mendes_Stitches',
+      title: 'Stitches',
+      artist: 'Shawn Mendes',
+      audioCandidates: [
+        'Canciones/Shawn_Mendes_Stitches/Shawn Mendes - Stitches (Lyrics).mp3',
+        'Canciones/Shawn_Mendes_Stitches/Shawn Mendes - Stitches AUDIO SIN MUSICA.mp3'
+      ],
+      lrcPath: 'Canciones/Shawn_Mendes_Stitches/letra.lrc'
+    }
+  };
+
+  SONG_CATALOG['ravyn'] = SONG_CATALOG['Ravyn_Lenae_Love_Me_Not'];
+  SONG_CATALOG['katy'] = SONG_CATALOG['KatyPerry_TheOneThatGotAway'];
+  SONG_CATALOG['ariana'] = SONG_CATALOG['ArianaGrande_HateThatIMadeYouLoveMe'];
+  SONG_CATALOG['shawn'] = SONG_CATALOG['Shawn_Mendes_Stitches'];
 
   // Undo History Stack for foolproof mistakes correction!
   let historyStack = [];
@@ -1791,18 +1859,49 @@ Sincroniza las líneas para generar el contenido aquí...</div>
     }
   }
 
-  // === DEMO LOADER ===
-  function loadSampleProject() {
-    const demoAudioPath = 'Canciones/Shawn_Mendes_Stitches/Shawn Mendes - Stitches (Lyrics).mp3';
-    audio.src = demoAudioPath;
-    songTitle = 'Stitches';
-    songArtist = 'Shawn Mendes';
+  // === PROJECT SONG LOADER ===
+  async function loadProjectSong(key) {
+    if (!key) return;
+    const song = SONG_CATALOG[key];
+    if (!song) {
+      showToast("Canción no encontrada");
+      return;
+    }
+
+    currentSongId = song.id;
+    songTitle = song.title;
+    songArtist = song.artist;
+
     document.getElementById('meta-title').value = songTitle;
     document.getElementById('meta-artist').value = songArtist;
 
-    document.getElementById('audio-drop-zone').style.display = 'none';
-    document.getElementById('file-loaded-box').style.display = 'flex';
-    document.getElementById('loaded-file-name').innerText = 'Shawn Mendes - Stitches.mp3';
+    const selectHeader = document.getElementById('header-song-select');
+    if (selectHeader) selectHeader.value = song.id;
+
+    // Actualizar enlaces contextuales
+    const navAdaptador = document.getElementById('btn-nav-adaptador');
+    if (navAdaptador) navAdaptador.href = `adaptador-musical.html?song=${encodeURIComponent(song.id)}`;
+    const navPlayer = document.getElementById('btn-nav-player');
+    if (navPlayer) navPlayer.href = `player.html?song=${encodeURIComponent(song.id)}`;
+
+    // Actualizar URL sin recargar
+    try {
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.set('song', song.id);
+      window.history.replaceState({}, '', newUrl);
+    } catch(e) {}
+
+    // Cargar pista de audio candidata
+    for (const src of song.audioCandidates) {
+      audio.src = src;
+      try {
+        await audio.load();
+        document.getElementById('audio-drop-zone').style.display = 'none';
+        document.getElementById('file-loaded-box').style.display = 'flex';
+        document.getElementById('loaded-file-name').innerText = `${song.artist} - ${song.title}.mp3`;
+        break;
+      } catch(e) {}
+    }
 
     audio.onloadedmetadata = () => {
       document.getElementById('duration-time').innerText = '/ ' + formatTime(audio.duration);
@@ -1810,18 +1909,32 @@ Sincroniza las líneas para generar el contenido aquí...</div>
       drawStaticWaveform();
     };
 
-    fetch('Canciones/Shawn_Mendes_Stitches/letra.lrc')
-      .then(res => res.text())
-      .then(text => {
+    // Cargar letra sincronizada existente o base
+    try {
+      const res = await fetch(song.lrcPath);
+      if (res.ok) {
+        const text = await res.text();
         document.getElementById('lyrics-raw-input').value = text;
-        initializeWorkspace();
-        showToast("¡Proyecto demo de Shawn Mendes cargado!");
-      })
-      .catch(() => {
-        loadSampleLyrics();
-        initializeWorkspace();
-        showToast("¡Audio y letra demo cargados!");
-      });
+        showToast(`¡Proyecto de ${song.artist} — "${song.title}" cargado! 🎵`);
+      }
+    } catch(e) {
+      showToast(`Audio de "${song.title}" cargado`);
+    }
+  }
+
+  function loadSampleProject() {
+    loadProjectSong('Shawn_Mendes_Stitches');
+  }
+
+  function clearWorkspaceInput() {
+    document.getElementById('lyrics-raw-input').value = '';
+    document.getElementById('meta-title').value = '';
+    document.getElementById('meta-artist').value = '';
+    currentSongId = null;
+    songTitle = '';
+    songArtist = '';
+    removeAudioFile();
+    showToast("Campos limpiados para nueva canción");
   }
 
   function loadSampleLyrics() {
@@ -2876,8 +2989,8 @@ Gotta get you out of my head, get you out of my head`;
   }
 
   function testInPlayer() {
-    const url = 'player.html?song=Shawn_Mendes_Stitches';
-    window.open(url, '_blank');
+    const targetSong = currentSongId || 'Ravyn_Lenae_Love_Me_Not';
+    window.open(`player.html?song=${encodeURIComponent(targetSong)}`, '_blank');
   }
 
   function sendToAdaptador() {
@@ -2886,10 +2999,11 @@ Gotta get you out of my head, get you out of my head`;
       showToast("No hay líneas para transferir");
       return;
     }
-    const title = document.getElementById('meta-title').value.trim() || 'Canción';
+    const title = document.getElementById('meta-title').value.trim() || songTitle || 'Canción';
     localStorage.setItem('adaptador_lrc_import', content);
     localStorage.setItem('adaptador_lrc_title', title);
-    window.open('adaptador-musical.html', '_blank');
+    const targetParam = currentSongId ? `?song=${encodeURIComponent(currentSongId)}` : '';
+    window.open(`adaptador-musical.html${targetParam}`, '_blank');
     showToast("Abriendo en Adaptador Musical 🎼");
   }
 
@@ -2974,6 +3088,12 @@ Gotta get you out of my head, get you out of my head`;
   window.addEventListener('DOMContentLoaded', () => {
     drawStaticWaveform();
     checkCachedState();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const songParam = urlParams.get('song') || urlParams.get('id');
+    if (songParam && SONG_CATALOG[songParam]) {
+      loadProjectSong(songParam);
+    }
   });
 </script>
 

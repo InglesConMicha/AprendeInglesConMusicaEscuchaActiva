@@ -842,6 +842,10 @@ function buildActions(song) {
   }
   return `
     <a href="player.html?song=${song.id}" class="btn-listen">Practicar Escucha Activa</a>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <a href="adaptador-musical.html?song=${song.id}" class="btn-quiz" style="border-color: rgba(192, 132, 252, 0.45); color: #c084fc; background: rgba(192, 132, 252, 0.08); font-size: 0.8rem; padding: 9px 8px;" title="Adaptar al español con métrica y ritmo">🎼 Adaptar</a>
+      <a href="crear-lrc.html?song=${song.id}" class="btn-quiz" style="border-color: rgba(56, 189, 248, 0.45); color: #38bdf8; background: rgba(56, 189, 248, 0.08); font-size: 0.8rem; padding: 9px 8px;" title="Crear o editar sincronización LRC">✨ LRC</a>
+    </div>
     <a href="Canciones/${song.id}/quiz.html" class="btn-quiz">Quiz de la canción</a>`;
 }
 
