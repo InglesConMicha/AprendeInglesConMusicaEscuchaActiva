@@ -731,6 +731,13 @@
   <div class="toolbar">
     <div class="toolbar-left">
       <button class="btn btn-toggle" id="btn-toggle-config" onclick="toggleConfigPanel()">⚙️ Configuración</button>
+      <select id="player-song-select" class="btn btn-toggle" style="background: rgba(15, 23, 42, 0.9); border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; font-weight: 700; cursor: pointer; padding: 6px 12px; outline: none;" onchange="if(this.value) loadPlayerSong(this.value)">
+        <option value="">🎵 Cambiar Diapositivas...</option>
+        <option value="Ravyn_Lenae_Love_Me_Not">🌸 Ravyn Lenae — Love Me Not (4 Diapositivas Previas)</option>
+        <option value="KatyPerry_TheOneThatGotAway">🎸 Katy Perry — The One That Got Away</option>
+        <option value="ArianaGrande_HateThatIMadeYouLoveMe">✨ Ariana Grande — Hate That I Made You</option>
+        <option value="Shawn_Mendes_Stitches">🪡 Shawn Mendes — Stitches</option>
+      </select>
       <a href="index.html" class="btn" style="text-decoration: none;">🏠 Volver al Menú</a>
       <a href="voz-en-off.html" class="btn" style="text-decoration: none; color: #fca5a5; border-color: rgba(239,68,68,0.35);">🎙️ Voz en Off</a>
       <a href="crear-lrc.html" id="btn-nav-crear-lrc" class="btn" style="text-decoration: none; color: #38bdf8; border-color: rgba(56,189,248,0.3);">✨ Crear LRC</a>
@@ -831,109 +838,219 @@
   const visualizer = document.getElementById('audio-visualizer');
   const slideCounter = document.getElementById('slide-counter');
 
-  // Detectar y cargar canción por parámetro URL
-  window.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const song = urlParams.get('song');
-    const customAudio = urlParams.get('audio');
-    if (song) {
-      // Sincronizar enlaces contextuales para Crear LRC y Adaptador Musical
-      const btnCrearLrc = document.getElementById('btn-nav-crear-lrc');
-      if (btnCrearLrc) btnCrearLrc.href = `crear-lrc.html?song=${encodeURIComponent(song)}`;
-      const btnAdaptador = document.getElementById('btn-nav-adaptador');
-      if (btnAdaptador) btnAdaptador.href = `adaptador-musical.html?song=${encodeURIComponent(song)}`;
+  // === CATÁLOGO DE CANCIONES Y DIAPOSITIVAS ===
+  const SONG_CATALOG = {
+    'Ravyn_Lenae_Love_Me_Not': {
+      id: 'Ravyn_Lenae_Love_Me_Not',
+      title: 'Ravyn Lenae — Love Me Not',
+      audioCandidates: [
+        'Canciones/Ravyn_Lenae_Love_Me_Not/Ravyn Lenae - Love Me Not SOLO VOZ.mp3',
+        'Canciones/Ravyn_Lenae_Love_Me_Not/Ravyn Lenae - Love Me Not (Official Music Video).mp3',
+        'Canciones/Ravyn_Lenae_Love_Me_Not/Ravyn Lenae - Love Me Not SOLO MUSICA.mp3'
+      ],
+      diapositivaPath: 'Canciones/Ravyn_Lenae_Love_Me_Not/diapositiva.lrc'
+    },
+    'KatyPerry_TheOneThatGotAway': {
+      id: 'KatyPerry_TheOneThatGotAway',
+      title: 'Katy Perry — The One That Got Away',
+      audioCandidates: [
+        'Canciones/KatyPerry_TheOneThatGotAway/Katy Perry - The One That Got Away ORIGINAL.mp3',
+        'Canciones/KatyPerry_TheOneThatGotAway/Katy Perry - The One That Got Away SOLO VOZ.mp3'
+      ],
+      diapositivaPath: 'Canciones/KatyPerry_TheOneThatGotAway/diapositiva.lrc'
+    },
+    'ArianaGrande_HateThatIMadeYouLoveMe': {
+      id: 'ArianaGrande_HateThatIMadeYouLoveMe',
+      title: 'Ariana Grande — Hate That I Made You Love Me',
+      audioCandidates: [
+        'Canciones/ArianaGrande_HateThatIMadeYouLoveMe/voz.mp3'
+      ],
+      diapositivaPath: 'Canciones/ArianaGrande_HateThatIMadeYouLoveMe/diapositiva.lrc'
+    },
+    'Shawn_Mendes_Stitches': {
+      id: 'Shawn_Mendes_Stitches',
+      title: 'Shawn Mendes — Stitches',
+      audioCandidates: [
+        'Canciones/Shawn_Mendes_Stitches/Shawn Mendes - Stitches AUDIO SIN MUSICA.mp3',
+        'Canciones/Shawn_Mendes_Stitches/Shawn Mendes - Stitches (Lyrics).mp3'
+      ],
+      diapositivaPath: 'Canciones/Shawn_Mendes_Stitches/diapositiva.lrc'
+    }
+  };
 
-      const configBtn = document.getElementById('btn-toggle-config');
-      if (configBtn) configBtn.style.display = 'none';
-      const configPanel = document.getElementById('config-panel');
-      if (configPanel) configPanel.classList.add('collapsed');
+  SONG_CATALOG['ravyn'] = SONG_CATALOG['Ravyn_Lenae_Love_Me_Not'];
+  SONG_CATALOG['katy'] = SONG_CATALOG['KatyPerry_TheOneThatGotAway'];
+  SONG_CATALOG['ariana'] = SONG_CATALOG['ArianaGrande_HateThatIMadeYouLoveMe'];
+  SONG_CATALOG['shawn'] = SONG_CATALOG['Shawn_Mendes_Stitches'];
 
-      slideDisplay.innerHTML = `<span style="color:#38bdf8; font-size:1.2rem; font-weight:600;">Cargando canción... 🎵</span>`;
-      
-      // Lista de posibles nombres de audio para máxima compatibilidad
-      const candidateAudioSources = customAudio 
-        ? [`Canciones/${song}/${customAudio}`] 
-        : [
-            `Canciones/${song}/voz.mp3`,
-            `Canciones/${song}/Katy Perry - The One That Got Away SOLO VOZ.mp3`,
-            `Canciones/${song}/Katy Perry - The One That Got Away ORIGINAL.mp3`,
-            `Canciones/${song}/Ravyn Lenae - Love Me Not SOLO VOZ.mp3`,
-            `Canciones/${song}/Ravyn Lenae - Love Me Not (Official Music Video).mp3`,
-            `Canciones/${song}/Ravyn Lenae - Love Me Not SOLO MUSICA.mp3`,
-            `Canciones/${song}/Shawn Mendes - Stitches AUDIO SIN MUSICA.mp3`,
-            `Canciones/${song}/Shawn Mendes - Stitches (Lyrics).mp3`,
-            `Canciones/${song}/audio.mp3`
-          ];
+  // Cargar canción y diapositivas limpiamente
+  async function loadPlayerSong(songId, customLrcText = null) {
+    if (!songId) return;
+    const songData = SONG_CATALOG[songId] || {
+      id: songId,
+      title: songId.replace(/_/g, ' '),
+      audioCandidates: [
+        `Canciones/${songId}/voz.mp3`,
+        `Canciones/${songId}/audio.mp3`
+      ],
+      diapositivaPath: `Canciones/${songId}/diapositiva.lrc`
+    };
 
-      let currentSourceIdx = 0;
-      audio.src = candidateAudioSources[0];
+    // Actualizar URL sin recargar
+    try {
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.set('song', songData.id);
+      if (!customLrcText) newUrl.searchParams.delete('preview_adaptation');
+      window.history.replaceState({}, '', newUrl);
+    } catch(e) {}
 
-      audio.onerror = () => {
-        currentSourceIdx++;
-        if (currentSourceIdx < candidateAudioSources.length) {
-          audio.src = candidateAudioSources[currentSourceIdx];
-        }
-      };
+    // Sincronizar enlaces contextuales
+    const btnCrearLrc = document.getElementById('btn-nav-crear-lrc');
+    if (btnCrearLrc) btnCrearLrc.href = `crear-lrc.html?song=${encodeURIComponent(songData.id)}`;
+    const btnAdaptador = document.getElementById('btn-nav-adaptador');
+    if (btnAdaptador) btnAdaptador.href = `adaptador-musical.html?song=${encodeURIComponent(songData.id)}`;
 
-      // Si se envió una adaptación desde el Adaptador Musical, probarla directamente
-      const customAdaptedLrc = localStorage.getItem('custom_player_lrc');
-      if (customAdaptedLrc) {
-        localStorage.removeItem('custom_player_lrc');
-        slidesData = parseLRC(customAdaptedLrc);
-        currentIndex = -1;
-        isRevealed = false;
-        
-        let cleanName = song.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
-        if (song === 'Shawn_Mendes_Stitches') cleanName = 'Shawn Mendes - Stitches';
-        if (song === 'ArianaGrande_HateThatIMadeYouLoveMe') cleanName = 'Ariana Grande - Hate That I Made You Love Me';
-        if (song === 'KatyPerry_TheOneThatGotAway') cleanName = 'Katy Perry - The One That Got Away';
-        if (song === 'Ravyn_Lenae_Love_Me_Not') cleanName = 'Ravyn Lenae - Love Me Not';
+    // Sincronizar select
+    const sel = document.getElementById('player-song-select');
+    if (sel) sel.value = songData.id;
 
-        document.querySelector('header h1').innerText = cleanName + ' (Adaptación) 🎼';
-        document.querySelector('header p').innerText = "Probando Adaptación al Español - Presiona Espacio para empezar";
-        slideDisplay.innerHTML = `<span style="color:#c084fc; font-size:1.2rem; font-weight:600;">¡Adaptación en Español cargada! 🎼</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">Pulsa <b>▶️ Siguiente</b> o la barra <b>Espaciadora</b> para probar tu letra.</span>`;
-        updateCounter();
-        return;
+    const configBtn = document.getElementById('btn-toggle-config');
+    if (configBtn) configBtn.style.display = 'none';
+    const configPanel = document.getElementById('config-panel');
+    if (configPanel) configPanel.classList.add('collapsed');
+
+    slideDisplay.innerHTML = `<span style="color:#38bdf8; font-size:1.2rem; font-weight:600;">Cargando diapositivas de "${songData.title}"... 🎵</span>`;
+
+    // Cargar pista de audio candidata
+    let audioLoaded = false;
+    for (const src of songData.audioCandidates) {
+      audio.src = src;
+      try {
+        await audio.load();
+        audioLoaded = true;
+        break;
+      } catch(e) {}
+    }
+
+    // Cargar archivo diapositiva.lrc o texto personalizado si viene explícitamente desde el adaptador
+    try {
+      let text = customLrcText;
+      if (!text) {
+        const response = await fetch(songData.diapositivaPath);
+        if (!response.ok) throw new Error('No se pudo encontrar el archivo de diapositivas.');
+        text = await response.text();
       }
 
-      fetch(`Canciones/${song}/diapositiva.lrc`)
-        .then(response => {
-          if (!response.ok) throw new Error('No se pudo encontrar el archivo de diapositivas.');
-          return response.text();
-        })
-        .then(text => {
-          slidesData = parseLRC(text);
-          currentIndex = -1;
-          isRevealed = false;
-          
-          let cleanName = song.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
-          if (song === 'Shawn_Mendes_Stitches') cleanName = 'Shawn Mendes - Stitches';
-          if (song === 'ArianaGrande_HateThatIMadeYouLoveMe') cleanName = 'Ariana Grande - Hate That I Made You Love Me';
-          if (song === 'KatyPerry_TheOneThatGotAway') cleanName = 'Katy Perry - The One That Got Away';
-          if (song === 'Ravyn_Lenae_Love_Me_Not') cleanName = 'Ravyn Lenae - Love Me Not';
+      slidesData = parseLRC(text);
+      currentIndex = -1;
+      isRevealed = false;
 
-          document.querySelector('header h1').innerText = cleanName + ' 🎵';
-          document.querySelector('header p').innerText = "Escucha Activa - Presiona Siguiente o Espacio para empezar";
-          
-          slideDisplay.innerHTML = `<span style="color:#38bdf8; font-size:1.2rem; font-weight:600;">¡Material cargado con éxito! 🎶</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">Pulsa <b>▶️ Siguiente</b> o presiona la barra <b>Espaciadora</b> para empezar.</span>`;
-          updateCounter();
-        })
-        .catch(err => {
-          console.error(err);
-          if (window.location.protocol === 'file:') {
-            slideDisplay.innerHTML = `
-              <span style="color:#f87171; font-size:1.15rem; font-weight:600; display:block; margin-bottom:8px;">Bloqueo de Seguridad del Navegador (CORS) ❌</span>
-              <span style="color:#94a3b8; font-size:0.9rem; font-weight:normal; display:block; margin-bottom:8px; line-height:1.4;">
-                Estás abriendo el archivo directamente (<code style="color:#fde047; font-family:monospace; background:rgba(0,0,0,0.3); padding:2px 4px; border-radius:4px;">file://</code>). Los navegadores modernos bloquean peticiones locales de texto por seguridad.
-              </span>
-              <span style="color:#38bdf8; font-size:0.9rem; font-weight:normal; display:block; line-height:1.4;">
-                <b>Para solucionarlo:</b> Abre el proyecto usando un servidor local (por ejemplo, haz clic derecho y selecciona <b>"Open with Live Server"</b> en VS Code, o ejecuta <code style="color:#fde047; font-family:monospace; background:rgba(0,0,0,0.3); padding:2px 4px; border-radius:4px;">npx http-server</code> en la terminal).
-              </span>
-            `;
-          } else {
-            slideDisplay.innerHTML = `<span style="color:#f87171; font-size:1.2rem; font-weight:600;">Error al cargar la canción ❌</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">Asegúrate de que la carpeta <b>Canciones/${song}</b> exista y contenga los archivos necesarios.</span>`;
-          }
-        });
+      document.querySelector('header h1').innerText = songData.title + (customLrcText ? ' (Vista Previa Adaptación) 🎼' : ' 🎵');
+      document.querySelector('header p').innerText = "Escucha Activa - Presiona Siguiente o Espacio para empezar";
+
+      const totalIntros = slidesData.filter(s => s.content && s.content.includes('intro-slide')).length;
+      let extraIntroNote = '';
+      if (totalIntros > 0) {
+        extraIntroNote = `<div style="margin-top:10px; font-size:0.85rem; color:#c084fc; font-weight:600;">✨ ¡Incluye ${totalIntros} Diapositivas Previas de Estudio (Vocabulario, Jergas y Expresiones)!</div>`;
+      } else if (customLrcText) {
+        extraIntroNote = `<div style="margin-top:10px; font-size:0.85rem; color:#38bdf8; font-weight:600;">🎼 Reproduciendo vista previa en vivo de tu adaptación al español</div>`;
+      }
+
+      slideDisplay.innerHTML = `
+        <span style="color:#38bdf8; font-size:1.25rem; font-weight:700;">¡Diapositivas listas! 🎶</span><br>
+        <span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px; display:inline-block;">Pulsa <b>▶️ Siguiente</b> o la barra <b>Espaciadora</b> para empezar.</span>
+        ${extraIntroNote}
+      `;
+      updateCounter();
+    } catch(err) {
+      console.error(err);
+      if (window.location.protocol === 'file:') {
+        slideDisplay.innerHTML = `
+          <span style="color:#f87171; font-size:1.15rem; font-weight:600; display:block; margin-bottom:8px;">Bloqueo de Seguridad del Navegador (CORS) ❌</span>
+          <span style="color:#94a3b8; font-size:0.9rem; font-weight:normal; display:block; margin-bottom:8px; line-height:1.4;">
+            Estás abriendo el archivo directamente (<code style="color:#fde047; font-family:monospace; background:rgba(0,0,0,0.3); padding:2px 4px; border-radius:4px;">file://</code>). Los navegadores modernos bloquean peticiones locales de texto por seguridad.
+          </span>
+          <span style="color:#38bdf8; font-size:0.9rem; font-weight:normal; display:block; line-height:1.4;">
+            <b>Para solucionarlo:</b> Abre el proyecto usando un servidor local (por ejemplo, haz clic derecho y selecciona <b>"Open with Live Server"</b> en VS Code, o ejecuta <code style="color:#fde047; font-family:monospace; background:rgba(0,0,0,0.3); padding:2px 4px; border-radius:4px;">npx http-server</code> en la terminal).
+          </span>
+        `;
+      } else {
+        slideDisplay.innerHTML = `<span style="color:#f87171; font-size:1.2rem; font-weight:600;">Error al cargar las diapositivas ❌</span><br><span style="color:#94a3b8; font-size:0.95rem; font-weight:normal; margin-top:8px;">Asegúrate de que la carpeta <b>Canciones/${songData.id}</b> contenga el archivo <b>diapositiva.lrc</b>.</span>`;
+      }
+    }
+  }
+
+  // Pantalla de selección cuando no se especifica canción en la URL
+  function renderWelcomePlayerPicker() {
+    slidesData = [];
+    currentIndex = -1;
+    document.querySelector('header h1').innerText = 'Reproductor de Diapositivas & Escucha Activa 🎧';
+    document.querySelector('header p').innerText = 'Selecciona una canción del repertorio para ver sus diapositivas y escuchar';
+
+    slideDisplay.innerHTML = `
+      <div style="padding: 18px 14px; max-width: 720px; margin: 0 auto; text-align: center;">
+        <div style="font-size: 2.8rem; margin-bottom: 8px;">🎶</div>
+        <h2 style="font-size: 1.35rem; color: #f8fafc; font-weight: 800; margin-bottom: 6px;">¿Qué diapositivas deseas abrir?</h2>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px;">Selecciona una canción para cargar de inmediato sus diapositivas sincronizadas y pistas:</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; text-align: left; margin-bottom: 20px;">
+          <div onclick="loadPlayerSong('Ravyn_Lenae_Love_Me_Not')" style="background: rgba(192, 132, 252, 0.1); border: 1px solid rgba(192, 132, 252, 0.4); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#c084fc'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(192, 132, 252, 0.4)'; this.style.transform='none';">
+            <div style="font-size: 1.25rem; margin-bottom: 4px;">🌸</div>
+            <div style="font-weight: 800; color: #e9d5ff; font-size: 0.95rem;">Love Me Not</div>
+            <div style="font-size: 0.78rem; color: #c084fc; font-weight: 600; margin-bottom: 4px;">Ravyn Lenae</div>
+            <div style="font-size: 0.72rem; color: #94a3b8;">4 Diapositivas Previas de Estudio + 50 Frases</div>
+          </div>
+
+          <div onclick="loadPlayerSong('KatyPerry_TheOneThatGotAway')" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#fbbf24'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(251, 191, 36, 0.4)'; this.style.transform='none';">
+            <div style="font-size: 1.25rem; margin-bottom: 4px;">🎸</div>
+            <div style="font-weight: 800; color: #fef08a; font-size: 0.95rem;">The One That Got Away</div>
+            <div style="font-size: 0.78rem; color: #f59e0b; font-weight: 600; margin-bottom: 4px;">Katy Perry</div>
+            <div style="font-size: 0.72rem; color: #94a3b8;">Balada pop con audio original y solo voz</div>
+          </div>
+
+          <div onclick="loadPlayerSong('ArianaGrande_HateThatIMadeYouLoveMe')" style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#a855f7'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(168, 85, 247, 0.4)'; this.style.transform='none';">
+            <div style="font-size: 1.25rem; margin-bottom: 4px;">✨</div>
+            <div style="font-weight: 800; color: #e9d5ff; font-size: 0.95rem;">Hate That I Made You Love Me</div>
+            <div style="font-size: 0.78rem; color: #c084fc; font-weight: 600; margin-bottom: 4px;">Ariana Grande</div>
+            <div style="font-size: 0.72rem; color: #94a3b8;">R&B suave y notas gramaticales</div>
+          </div>
+
+          <div onclick="loadPlayerSong('Shawn_Mendes_Stitches')" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#38bdf8'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(56, 189, 248, 0.4)'; this.style.transform='none';">
+            <div style="font-size: 1.25rem; margin-bottom: 4px;">🪡</div>
+            <div style="font-weight: 800; color: #bae6fd; font-size: 0.95rem;">Stitches</div>
+            <div style="font-size: 0.78rem; color: #38bdf8; font-weight: 600; margin-bottom: 4px;">Shawn Mendes</div>
+            <div style="font-size: 0.72rem; color: #94a3b8;">57 frases con notas médicas y modismos</div>
+          </div>
+        </div>
+
+        <button class="btn btn-toggle" onclick="toggleConfigPanel()" style="font-size: 0.8rem;">⚙️ O subir mis propios archivos manuales</button>
+      </div>
+    `;
+    updateCounter();
+  }
+
+  // Detectar y cargar canción al iniciar
+  window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isPreviewAdaptation = urlParams.get('preview_adaptation') === '1';
+    let previewText = null;
+
+    if (isPreviewAdaptation) {
+      try {
+        previewText = localStorage.getItem('custom_player_lrc');
+        localStorage.removeItem('custom_player_lrc'); // Limpiar inmediatamente para que nunca persista
+      } catch(e) {}
+    } else {
+      try {
+        localStorage.removeItem('custom_player_lrc');
+      } catch(e) {}
+    }
+
+    const songParam = urlParams.get('song') || urlParams.get('id');
+    if (songParam) {
+      loadPlayerSong(songParam, previewText);
+    } else {
+      renderWelcomePlayerPicker();
     }
   });
 

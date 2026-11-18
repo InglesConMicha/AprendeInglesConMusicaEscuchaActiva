@@ -2617,7 +2617,7 @@
 
       localStorage.setItem('custom_player_lrc', testLrc);
       const targetSong = state.currentSongId || 'Ravyn_Lenae_Love_Me_Not';
-      window.open(`player.html?song=${encodeURIComponent(targetSong)}`, '_blank');
+      window.open(`player.html?song=${encodeURIComponent(targetSong)}&preview_adaptation=1`, '_blank');
       showToast('Abriendo en Reproductor de Escucha Activa 🎧');
     }
 
