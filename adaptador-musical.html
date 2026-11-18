@@ -1846,28 +1846,62 @@
         }
       }
 
-      // Fetch LRC (prefer diapositiva.lrc if exists, else letra.lrc)
+      // Cargar EXCLUSIVAMENTE el archivo de letra pura de la canción (letra.lrc) - NUNCA las diapositivas
       let lrcContent = '';
       try {
-        const respDiap = await fetch(song.diapositivaPath);
-        if (respDiap.ok) {
-          lrcContent = await respDiap.text();
+        const respLetra = await fetch(song.lrcPath);
+        if (respLetra.ok) {
+          lrcContent = await respLetra.text();
         }
       } catch (e) {}
 
       if (!lrcContent) {
         try {
-          const respLetra = await fetch(song.lrcPath);
-          if (respLetra.ok) {
-            lrcContent = await respLetra.text();
-          }
+          const respAlt = await fetch(`Canciones/${song.id}/letra.lrc`);
+          if (respAlt.ok) lrcContent = await respAlt.text();
         } catch (e) {}
       }
 
+      // Extraer opcionalmente diccionario de traducción literal como guía, sin cargar diapositivas al banco de trabajo
+      const translationMap = {};
+      try {
+        if (song.diapositivaPath) {
+          const respDiap = await fetch(song.diapositivaPath);
+          if (respDiap.ok) {
+            const diapText = await respDiap.text();
+            const dLines = diapText.split(/\r?\n/);
+            for (const dl of dLines) {
+              const trimmed = dl.trim();
+              if (!trimmed || trimmed.includes('intro-slide') || trimmed.includes('<div')) continue;
+              const esMatch = /<small class=["']es["']>(.*?)<\/small>/i.exec(trimmed);
+              if (esMatch) {
+                const spanish = esMatch[1].trim();
+                const tm = /^\[(\d{1,2}:\d{2}\.\d{2})/.exec(trimmed);
+                if (tm) {
+                  const normTime = tm[1].padStart(8, '0');
+                  translationMap[tm[1]] = spanish;
+                  translationMap[normTime] = spanish;
+                }
+                const cleanKey = trimmed.replace(/^\[.*?\]/, '')
+                  .replace(/<small class=["']es["']>.*?<\/small>/gi, '')
+                  .replace(/<span class=["']note["']>.*?<\/span>/gi, '')
+                  .replace(/<span class=["']pron["']>.*?<\/span>/gi, '')
+                  .replace(/<[^>]+>/g, '')
+                  .trim()
+                  .toLowerCase();
+                if (cleanKey) translationMap[cleanKey] = spanish;
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Diccionario de traducción no disponible:', e);
+      }
+
       if (lrcContent) {
-        parseAndSetLRC(lrcContent, song.title);
+        parseAndSetLRC(lrcContent, song.title, translationMap);
         document.getElementById('song-status-display').innerText = `Listo · ${state.lines.length} frases · Audio sincronizado`;
-        showToast(`Canción "${song.title}" cargada exitosamente 🎵`);
+        showToast(`Letra de "${song.title}" cargada exitosamente 🎵`);
       } else {
         document.getElementById('song-status-display').innerText = 'Error al cargar letra LRC';
       }
@@ -1930,13 +1964,13 @@
     }
 
     // === PARSE LRC CONTENT ===
-    function parseAndSetLRC(lrcText, title = '') {
+    function parseAndSetLRC(lrcText, title = '', translationMap = {}) {
       if (title) {
         state.songTitle = title;
         document.getElementById('song-title-display').innerText = title;
       }
 
-      const lines = lrcText.split('\n');
+      const lines = lrcText.split(/\r?\n/);
       const parsedLines = [];
       let idx = 1;
 
@@ -1944,27 +1978,31 @@
         const trimmed = line.trim();
         if (!trimmed) continue;
 
-        // Skip metadata tags like [ti:], [ar:], [by:]
+        // Omitir etiquetas de metadatos como [ti:], [ar:], [by:]
         if (/^\[(ti|ar|al|by|offset|length):/i.test(trimmed)) continue;
-        // Skip intro study slides in adaptation workbench so user focuses on lyrics
-        if (trimmed.includes('intro-slide')) continue;
 
-        // Handle standard [mm:ss.xx] or range [mm:ss.xx-mm:ss.xx]
-        const rangeMatch = /^\[(\d{2}:\d{2}\.\d{2})-(\d{2}:\d{2}\.\d{2})\](.*)$/.exec(trimmed);
-        const singleMatch = /^\[(\d{2}:\d{2}\.\d{2})\](.*)$/.exec(trimmed);
+        // Omitir terminantemente diapositivas de estudio o bloques HTML para adaptar exclusivamente la letra de la canción
+        if (trimmed.includes('intro-slide') || trimmed.includes('<div') || trimmed.includes('intro-header') || trimmed.includes('intro-title')) continue;
+
+        // Handle standard [m:ss.xx] / [mm:ss.xx] or range [mm:ss.xx-mm:ss.xx]
+        const rangeMatch = /^\[(\d{1,2}:\d{2}\.\d{2})-(\d{1,2}:\d{2}\.\d{2})\](.*)$/.exec(trimmed);
+        const singleMatch = /^\[(\d{1,2}:\d{2}\.\d{2})\](.*)$/.exec(trimmed);
 
         if (rangeMatch) {
           const startTime = parseSeconds(rangeMatch[1]);
           const endTime = parseSeconds(rangeMatch[2]);
           const rawContent = rangeMatch[3];
           const didactic = parseDidacticContent(rawContent);
+          const normTime = rangeMatch[1].padStart(8, '0');
+          const cleanKey = didactic.mainText.toLowerCase();
+          const literal = didactic.spanish || translationMap[rangeMatch[1]] || translationMap[normTime] || translationMap[cleanKey] || '';
 
           parsedLines.push({
             id: idx++,
             startTime,
             endTime,
             origText: didactic.mainText,
-            literalText: didactic.spanish || '',
+            literalText: literal,
             adaptedText: '',
             notes: didactic.note || ''
           });
@@ -1972,13 +2010,16 @@
           const startTime = parseSeconds(singleMatch[1]);
           const rawContent = singleMatch[2];
           const didactic = parseDidacticContent(rawContent);
+          const normTime = singleMatch[1].padStart(8, '0');
+          const cleanKey = didactic.mainText.toLowerCase();
+          const literal = didactic.spanish || translationMap[singleMatch[1]] || translationMap[normTime] || translationMap[cleanKey] || '';
 
           parsedLines.push({
             id: idx++,
             startTime,
             endTime: null,
             origText: didactic.mainText,
-            literalText: didactic.spanish || '',
+            literalText: literal,
             adaptedText: '',
             notes: didactic.note || ''
           });
@@ -2006,21 +2047,22 @@
       let spanish = '';
       let note = '';
 
-      const esMatch = /<small class="es">(.*?)<\/small>/i.exec(str);
+      const esMatch = /<small class=["']es["']>(.*?)<\/small>/i.exec(str);
       if (esMatch) {
         spanish = esMatch[1];
         mainText = mainText.replace(esMatch[0], '');
       }
 
-      const noteMatch = /<span class="note">(.*?)<\/span>/i.exec(str);
+      const noteMatch = /<span class=["']note["']>(.*?)<\/span>/i.exec(str);
       if (noteMatch) {
         note = noteMatch[1];
         mainText = mainText.replace(noteMatch[0], '');
       }
 
-      // Clean other tags
-      mainText = mainText.replace(/<span class="pron">(.*?)<\/span>/gi, '');
-      mainText = mainText.replace(/<br\s*[\/]?>/gi, ' ').trim();
+      // Clean other tags and extra HTML
+      mainText = mainText.replace(/<span class=["']pron["']>(.*?)<\/span>/gi, '');
+      mainText = mainText.replace(/<br\s*[\/]?>/gi, ' ');
+      mainText = mainText.replace(/<[^>]+>/g, '').trim();
 
       return { mainText, spanish, note };
     }
